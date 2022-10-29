@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.23)
 project(Alice_Tracer)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-set(alice_tracer ${CMAKE_CURRENT_SOURCE_DIR})
-set(utils_src ${CMAKE_CURRENT_SOURCE_DIR}/utils/src)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/libs/)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-include_directories(
-        ${alice_tracer}
-)
+set(ALICE_TRACER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(AliceTracer main.cpp utils/include/alice_math.h core/include/camera.h core/include/color.h utils/include/alice_file.h core/include/tone_mapping.h core/include/ray.h utils/include/alice_image.h core/include/brdf.h core/include/material.h core/include/intersection_solver.h utils/include/alice_threads.h utils/include/alice_common.h)
+add_subdirectory(utils)
+add_subdirectory(core)
+add_subdirectory(example)

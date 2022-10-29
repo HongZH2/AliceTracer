@@ -1,0 +1,10 @@
+//
+// Created by Hong Zhang on 2022/10/30.
+//
+
+#ifndef ALICE_TRACER_ACCELERATE_STRUCT_H
+#define ALICE_TRACER_ACCELERATE_STRUCT_H
+
+
+
+#endif //ALICE_TRACER_ACCELERATE_STRUCT_H

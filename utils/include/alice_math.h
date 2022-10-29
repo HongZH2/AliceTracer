@@ -33,6 +33,11 @@ namespace ALICE_UTILS {
 
     // functions
     template <typename T>
+    inline decltype(auto) AClamp(const T & vec, const T & min, const T & max){
+        return glm::clamp(vec, min, max);
+    }
+
+    template <typename T>
     inline decltype(auto) AValuePtr(T & data){
         return glm::value_ptr(data);
     }

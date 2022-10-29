@@ -1,2 +1,4 @@
-
-.idea/vcs.xml
+cmake-build-debug
+.idea
+bin
+.DS_Store

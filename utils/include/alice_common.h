@@ -6,7 +6,10 @@
 #define ALICE_TRACER_ALICE_COMMON_H
 
 #include <thread>
+#include <vector>
 #include <array>
+#include <random>
+#include <cstdint>
 
 namespace ALICE_UTILS {
 
