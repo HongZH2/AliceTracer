@@ -1,3 +1,0 @@
-/Users/hongzhang/CLionProjects/AliceTracer/cmake-build-debug/CMakeFiles/AliceTracer.dir
-/Users/hongzhang/CLionProjects/AliceTracer/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/hongzhang/CLionProjects/AliceTracer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
