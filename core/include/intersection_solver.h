@@ -18,8 +18,7 @@ namespace ALICE_TRACER{
         IntersectionSolver() = default;
         ~IntersectionSolver() = default;
 
-        static bool isHitObject(Ray & ray, Sphere & sphere);
-//        static AVec3 computeIntersection(Ray & ray, Sphere & sphere);  // TODO: remove sphere, use a more general class
+        static float isHitObject(Ray & ray, Sphere & sphere); // TODO: remove sphere, use a more general class
     };
 }
 

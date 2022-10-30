@@ -56,6 +56,9 @@ namespace ALICE_TRACER{
 
         AVec3 center() const{return center_;}
         float radius() const{return radius_;}
+
+        AVec3 getNormal(AVec3 & point);
+
     private:
         AVec3 center_;
         float radius_;

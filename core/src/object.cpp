@@ -12,6 +12,10 @@ namespace ALICE_TRACER{
 
     }
 
+    AVec3 Sphere::getNormal(AVec3 &point) {
+        return ANormalize(point - center_);
+    }
+
     Cube::Cube(AVec3 center, float length): center_(center), length_(length) {
 
     }

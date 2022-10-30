@@ -12,4 +12,5 @@ set(ALICE_TRACER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(utils)
 add_subdirectory(core)
+add_subdirectory(interface)
 add_subdirectory(example)

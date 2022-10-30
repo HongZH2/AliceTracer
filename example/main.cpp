@@ -2,6 +2,9 @@
 // Created by Hong Zhang on 2022/10/29.
 //
 
+#include "interface/include/window.h"
+#include "interface/include/imgui_widgets.h"
+
 #include "core/include/image.h"
 #include "core/include/camera.h"
 #include "core/include/object.h"
@@ -11,9 +14,16 @@
 #include "third_parties/stb_image/stb_write.h"
 
 int main(){
-    uint32_t width = 1024;
-    uint32_t height = 968;
+    uint32_t width = 800;
+    uint32_t height = 600;
     float w_h_ratio = (float)width/(float)height;
+
+    // create a window
+    ALICE_TRACER::Window window{};
+    window.initWindow(width, height);
+    ALICE_TRACER::ImGUIWidget widgets;
+    widgets.initImGui();
+
     // generate an empty image
     ALICE_TRACER::ImageRGB result_image{width, height};
 
@@ -41,9 +51,10 @@ int main(){
 
             // compute the color
             // ... start path tracing
-            bool is_hit = ALICE_TRACER::IntersectionSolver::isHitObject(cam_ray, sphere1);
-            if(is_hit){
-                cam_ray.color_ = AVec3(1.f, 0.f, 0.f);
+            float time = ALICE_TRACER::IntersectionSolver::isHitObject(cam_ray, sphere1);
+            if(time > 0.f){
+                AVec3 point = cam_ray.start_ + time * cam_ray.dir_;
+                cam_ray.color_ = sphere1.getNormal(point);
             }
             else{
                 cam_ray.color_ = AVec3(0.1f);
@@ -58,14 +69,15 @@ int main(){
         }
     }
 
-
-
-
-
-
-
-
     stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(),0);
+
+    while(window.updateWindow()){
+        widgets.updateImGui();
+        window.swapBuffer();
+    }
+
+    widgets.destroyImGui();
+    window.releaseWindow();
 
     return 0;
 }
