@@ -8,7 +8,8 @@
 #include "third_parties/imgui/imgui.h"
 #include "third_parties/imgui/backends/imgui_impl_glfw.h"
 #include "third_parties/imgui/backends/imgui_impl_opengl3.h"
-#define GL_SILENCE_DEPRECATION
+
+#include "render_texture.h"
 
 namespace ALICE_TRACER{
 

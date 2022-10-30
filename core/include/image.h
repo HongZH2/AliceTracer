@@ -56,7 +56,7 @@ namespace ALICE_TRACER{
         }
 
         // get the buffer ptr
-        inline uint8_t* getDataPtr(){return buffer_;}
+        inline uint8_t* & getDataPtr(){return buffer_;}
 
     private:
         uint8_t * buffer_;
@@ -78,7 +78,7 @@ namespace ALICE_TRACER{
         }
 
         // get the buffer ptr
-        inline uint8_t* getDataPtr(){return buffer_;}
+        inline uint8_t* & getDataPtr(){return buffer_;}
 
     private:
         uint8_t * buffer_;

@@ -10,6 +10,10 @@
 #include "core/include/object.h"
 #include "core/include/intersection_solver.h"
 
+#include "interface/include/render_texture.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "third_parties/stb_image/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "third_parties/stb_image/stb_write.h"
 
@@ -69,9 +73,18 @@ int main(){
         }
     }
 
-    stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(),0);
+    //stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+
+    // create a texture
+    ALICE_TRACER::TextureBuffer texture;
+
 
     while(window.updateWindow()){
+        if(texture.isUpdate()){
+            texture.loadGPUTexture(&result_image);
+        }
+        texture.drawTexture();
+
         widgets.updateImGui();
         window.swapBuffer();
     }

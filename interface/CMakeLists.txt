@@ -12,11 +12,15 @@ set(GLFW_LIB ${ALICE_TRACER_ROOT}/third_parties/glfw/lib/libglfw3.a)
 # imgui
 set(IMGUI_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/imgui/)
 
+# opengl
+find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+
 include_directories(
         ${ALICE_TRACER_ROOT}
         ${GLFW_INCLUDE}
         ${IMGUI_INCLUDE}
         ${IMGUI_INCLUDE}/backends/
+        ${OPENGL_INCLUDE_DIR}
 )
 
 file(GLOB IMGUI_SRC ${ALICE_TRACER_ROOT}/third_parties/imgui/*.h

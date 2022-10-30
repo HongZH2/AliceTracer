@@ -48,8 +48,7 @@ namespace ALICE_TRACER{
         int display_w, display_h;
         glfwGetFramebufferSize(current_context, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.f, 0.f, 0.f, 0.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -69,6 +68,7 @@ namespace ALICE_TRACER{
 
     void ImGUIWidget::drawWidgets() {
         {
+            ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
             static int counter = 0;
 
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
@@ -76,7 +76,6 @@ namespace ALICE_TRACER{
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
-
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
