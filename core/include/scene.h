@@ -7,7 +7,7 @@
 
 #include "utils/include/alice_common.h"
 #include "accelerate_struct.h"
-#include "object.h"
+#include "hittable.h"
 
 namespace ALICE_TRACER{
 

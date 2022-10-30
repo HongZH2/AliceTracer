@@ -8,7 +8,7 @@
 #include "utils/include/alice_common.h"
 #include "utils/include/alice_math.h"
 #include "ray.h"
-#include "object.h"
+#include "hittable.h"
 
 namespace ALICE_TRACER{
 

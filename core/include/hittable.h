@@ -2,8 +2,8 @@
 // Created by Hong Zhang on 2022/10/30.
 //
 
-#ifndef ALICE_TRACER_OBJECT_H
-#define ALICE_TRACER_OBJECT_H
+#ifndef ALICE_TRACER_HITTABLE_H
+#define ALICE_TRACER_HITTABLE_H
 
 #include "material.h"
 #include "utils/include/alice_common.h"
@@ -36,11 +36,11 @@ namespace ALICE_TRACER{
         float radius_;
     };
 
-    // The Primitive Base
-    class PrimitiveBase{
+    // The Hittable Objects/Surfaces/Volume
+    class Hittable{
     public:
-        PrimitiveBase() = default;
-        virtual ~PrimitiveBase() = default;
+        Hittable() = default;
+        virtual ~Hittable() = default;
 
         inline BoundingLimit * getBoundLimit(){return bound_;}
 
@@ -49,7 +49,7 @@ namespace ALICE_TRACER{
     };
 
     // Sphere
-    class Sphere: public PrimitiveBase{
+    class Sphere: public Hittable{
     public:
         Sphere(AVec3 center, float radius);
         ~Sphere() override = default;
@@ -65,7 +65,7 @@ namespace ALICE_TRACER{
     };
 
     // Cube
-    class Cube: public PrimitiveBase{
+    class Cube: public Hittable{
         Cube(AVec3 center, float length);
         ~Cube() override = default;
     private:
@@ -77,4 +77,4 @@ namespace ALICE_TRACER{
 }
 
 
-#endif //ALICE_TRACER_OBJECT_H
+#endif //ALICE_TRACER_HITTABLE_H

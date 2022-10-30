@@ -7,15 +7,15 @@
 
 #include "core/include/image.h"
 #include "core/include/camera.h"
-#include "core/include/object.h"
+#include "core/include/hittable.h"
 #include "core/include/intersection_solver.h"
 
 #include "interface/include/render_texture.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "third_parties/stb_image/stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "third_parties/stb_image/stb_write.h"
+//#define STB_IMAGE_IMPLEMENTATION
+//#include "third_parties/stb_image/stb_image.h"
+//#define STB_IMAGE_WRITE_IMPLEMENTATION
+//#include "third_parties/stb_image/stb_write.h"
 
 int main(){
     uint32_t width = 800;
@@ -42,7 +42,6 @@ int main(){
         AVec3(1.f, 0.f, 0.f), 1.f
     };
 
-
     // generate the image pixel by pixel
     for (uint32_t i = 0; i < result_image.h(); ++i) {
         for(uint32_t j = 0; j < result_image.w(); ++j){
@@ -52,7 +51,6 @@ int main(){
             AVec2i pixel{j, i};
             AVec2i resolution{result_image.w(), result_image.h()};
             ALICE_TRACER::Ray cam_ray = camera.computeRay(pixel, resolution);
-
             // compute the color
             // ... start path tracing
             float time = ALICE_TRACER::IntersectionSolver::isHitObject(cam_ray, sphere1);
@@ -63,7 +61,6 @@ int main(){
             else{
                 cam_ray.color_ = AVec3(0.1f);
             }
-
             // float to unsigned int 255
             AVec3i color = cam_ray.color_.ToUInt();
             // assign the color to RGB channel
@@ -73,24 +70,18 @@ int main(){
         }
     }
 
-    //stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
-
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
-
-
+    // render to the screen
     while(window.updateWindow()){
         if(texture.isUpdate()){
             texture.loadGPUTexture(&result_image);
         }
         texture.drawTexture();
-
         widgets.updateImGui();
         window.swapBuffer();
     }
-
     widgets.destroyImGui();
     window.releaseWindow();
-
     return 0;
 }

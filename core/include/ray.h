@@ -12,11 +12,20 @@
 using namespace ALICE_UTILS;
 
 namespace ALICE_TRACER{
+
+    // Data Struct For Ray
     struct Ray{
         AVec3 start_;
         AVec3 dir_;
         float time_;
         Color color_;
+    };
+
+    // Hit Response
+    struct HitRes{
+        bool is_hit_;
+        AVec3 point_;
+        AVec3 normal_;
     };
 }
 

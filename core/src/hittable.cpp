@@ -2,7 +2,7 @@
 // Created by Hong Zhang on 2022/10/30.
 //
 
-#include "core/include/object.h"
+#include "core/include/hittable.h"
 
 namespace ALICE_TRACER{
     BoundingBox::BoundingBox(AVec3 b_min, AVec3 b_max): b_min_(b_min), b_max_(b_max) {
