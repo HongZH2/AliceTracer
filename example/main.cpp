@@ -87,7 +87,7 @@ int main(){
     window.releaseWindow();
 
 
-    stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
 
     return 0;
 }
