@@ -3,7 +3,6 @@
 //
 #include "interface/include/render_texture.h"
 #define GL_SILENCE_DEPRECATION
-#include "OpenGL/gl.h"
 #include "OpenGL/gl3.h"
 
 namespace ALICE_TRACER{
@@ -24,7 +23,7 @@ namespace ALICE_TRACER{
                                            "out vec4 FragColor;\n"
                                            "void main()\n"
                                            "{\n"
-                                           "   FragColor = texture(result, uv);\n"
+                                           "   FragColor = texture(result, vec2(uv.x, 1. - uv.y));\n"
                                            "}\n\0";
 
 

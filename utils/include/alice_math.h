@@ -33,6 +33,15 @@ namespace ALICE_UTILS {
 
     // functions
     template <typename T>
+    inline decltype(auto) APow(const T & vec, const T & index){
+        return glm::pow(vec, index);
+    }
+
+    inline float AClamp(float val){
+        return glm::clamp(val, 0.f, 1.f);
+    }
+
+    template <typename T>
     inline decltype(auto) AClamp(const T & vec, const T & min, const T & max){
         return glm::clamp(vec, min, max);
     }

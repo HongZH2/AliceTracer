@@ -29,6 +29,16 @@ namespace ALICE_TRACER{
         buffer_ = nullptr;
     }
 
+    ImageRGB32F::ImageRGB32F(uint32_t width, uint32_t height) : ImageBase(width, height, 3, ImageType::IMG_RGB32F){
+        buffer_ = new float [width * height * 3];
+    }
+
+    ImageRGB32F::~ImageRGB32F() {
+        if(buffer_)
+            delete [] buffer_;
+        buffer_ = nullptr;
+    }
+
 
 
 }

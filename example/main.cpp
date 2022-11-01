@@ -2,24 +2,23 @@
 // Created by Hong Zhang on 2022/10/29.
 //
 
+// interface api
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
-
-#include "core/include/image.h"
-#include "core/include/camera.h"
-#include "core/include/hittable.h"
-#include "core/include/intersection_solver.h"
-
 #include "interface/include/render_texture.h"
 
-//#define STB_IMAGE_IMPLEMENTATION
-//#include "third_parties/stb_image/stb_image.h"
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
-//#include "third_parties/stb_image/stb_write.h"
+// render core components
+#include "core/include/image.h"
+#include "core/include/camera.h"
+#include "core/include/scene.h"
+
+// stb image
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "third_parties/stb_image/stb_write.h"
 
 int main(){
-    uint32_t width = 800;
-    uint32_t height = 600;
+    uint32_t width = 1200u;
+    uint32_t height = 800u;
     float w_h_ratio = (float)width/(float)height;
 
     // create a window
@@ -30,6 +29,7 @@ int main(){
 
     // generate an empty image
     ALICE_TRACER::ImageRGB result_image{width, height};
+    AVec2i resolution{result_image.w(), result_image.h()};
 
     // define the camera in the scene
     ALICE_TRACER::Camera camera{
@@ -38,31 +38,33 @@ int main(){
         AVec3(0.f, 0.f, 1.f), AVec3(0.f, 1.f, 0.f), AVec3(1.f, 0.f, 0.f)};
 
     // set up the scene
-    ALICE_TRACER::Sphere sphere1{
-        AVec3(1.f, 0.f, 0.f), 1.f
-    };
+    ALICE_TRACER::Material mtl1;
+    mtl1.albedo_ = AVec3(1.f);
+    ALICE_TRACER::Material mtl2{};
+    mtl2.albedo_ = AVec3(1.f, 0.f, 0.f);
+    ALICE_TRACER::LambertBRDF lambert;
+
+    ALICE_TRACER::Sphere sphere1{AVec3(1.f, 0.f, 0.f), 1.f, &mtl1, &lambert};
+    ALICE_TRACER::Sphere sphere2{AVec3(-2.f, 0.f, -1.5f), 1.f, &mtl2, &lambert};
+    ALICE_TRACER::Sphere sphere3{AVec3(1.f, -101.f, 0.f), 100.f, &mtl1, &lambert};
+
+    // set up the scene
+    ALICE_TRACER::Scene scene;
+    scene.addCamera(camera);
+    scene.addHittable(&sphere1);
+    scene.addHittable(&sphere2);
+    scene.addHittable(&sphere3);
 
     // generate the image pixel by pixel
     for (uint32_t i = 0; i < result_image.h(); ++i) {
         for(uint32_t j = 0; j < result_image.w(); ++j){
-            if (j == result_image.h() - 1)
-                int s = 1;
-            // compute the camera ray
+            // get the current pixel and re
             AVec2i pixel{j, i};
-            AVec2i resolution{result_image.w(), result_image.h()};
-            ALICE_TRACER::Ray cam_ray = camera.computeRay(pixel, resolution);
-            // compute the color
-            // ... start path tracing
-            float time = ALICE_TRACER::IntersectionSolver::isHitObject(cam_ray, sphere1);
-            if(time > 0.f){
-                AVec3 point = cam_ray.start_ + time * cam_ray.dir_;
-                cam_ray.color_ = sphere1.getNormal(point);
-            }
-            else{
-                cam_ray.color_ = AVec3(0.1f);
-            }
+            ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
+
             // float to unsigned int 255
-            AVec3i color = cam_ray.color_.ToUInt();
+            AVec3i color = pixel_col.ToUInt();
+
             // assign the color to RGB channel
             for (uint32_t c = 0; c < result_image.c(); ++c) {
                 result_image(i, j, c) = color[c];
@@ -83,5 +85,9 @@ int main(){
     }
     widgets.destroyImGui();
     window.releaseWindow();
+
+
+    stbi_write_png("./test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+
     return 0;
 }

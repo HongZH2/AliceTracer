@@ -16,25 +16,26 @@ namespace ALICE_TRACER{
 
         // convert the float value [0., 1.] to the unsigned integer [0, 255]
         AVec3i ToUInt() const{
-            AVec3 temp = AClamp(rgb, AVec3(0.f), AVec3(1.f));
+            AVec3 temp = AClamp(rgb_, AVec3(0.f), AVec3(1.f));
             return temp * 255.f;
         }
 
         float & operator[](int32_t i){
-            return rgb[i];
+            return rgb_[i];
         }
 
         Color & operator=(const Color & c){
-            rgb = c.rgb;
+            rgb_ = c.rgb_;
             return *this;
         }
 
         Color & operator=(const AVec3 & col){
-            rgb = col;
+            rgb_ = col;
             return *this;
         }
+
     public:
-        AVec3 rgb; // [0., 1.]
+        AVec3 rgb_; // [0., 1.]
     };
 }
 

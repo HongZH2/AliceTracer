@@ -84,6 +84,27 @@ namespace ALICE_TRACER{
         uint8_t * buffer_;
     };
 
+    // RGB32F: 32 bits float per pixel
+    class ImageRGB32F: public ImageBase{
+    public:
+        ImageRGB32F(uint32_t width, uint32_t height);
+        ~ImageRGB32F() override;
+
+        // reload the operator ()
+        float & operator()(uint32_t i, uint32_t j){
+            return buffer_[i * stride_ + j * channel_];
+        }
+
+        float & operator()(uint32_t i, uint32_t j, uint32_t c){
+            return buffer_[i * stride_ + j * channel_+ c];
+        }
+
+        // get the buffer ptr
+        inline float* & getDataPtr(){return buffer_;}
+    private:
+        float * buffer_;
+    };
+
 
 
 

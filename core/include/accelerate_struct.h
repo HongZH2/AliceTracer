@@ -7,6 +7,7 @@
 
 #include "utils/include/alice_common.h"
 #include "utils/include/alice_math.h"
+#include "hittable.h"
 
 namespace ALICE_TRACER{
     // A set of the hittable instances
@@ -14,18 +15,27 @@ namespace ALICE_TRACER{
     public:
         HittableCluster() = default;
         virtual ~HittableCluster() = default;
+        virtual HitRes hitCheck(Ray & ray) = 0;
+        virtual void addHittableInst(Hittable * hittable_inst) = 0;
+        virtual void removeHittableInst(uint32_t id) = 0;
 
-        virtual void hitCheck() = 0;
+    protected:
+        float t_min_ = 0.f;
+        float t_max_ = MAXFLOAT;
     };
 
+    // A naive hittable list
     class ClusterList: public HittableCluster{
     public:
-        ClusterList();
-        ~ClusterList() override;
+        ClusterList() = default;
+        ~ClusterList() override = default;
 
-        void hitCheck() override;
+        HitRes hitCheck(Ray & ray) override;
+        void addHittableInst(Hittable * hittable_inst)override;
+        void removeHittableInst(uint32_t id)override;
+
     private:
-//        std::vector<>
+        std::vector<Hittable *> hittable_array_;  // a list of the hittable instances
     };
 
 

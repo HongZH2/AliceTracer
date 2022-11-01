@@ -5,9 +5,9 @@
 #ifndef ALICE_TRACER_RAY_H
 #define ALICE_TRACER_RAY_H
 
-#include "utils/include/alice_common.h"
-#include "utils/include/alice_math.h"
 #include "color.h"
+#include "material.h"
+#include "bxdf.h"
 
 using namespace ALICE_UTILS;
 
@@ -23,9 +23,21 @@ namespace ALICE_TRACER{
 
     // Hit Response
     struct HitRes{
-        bool is_hit_;
+        bool is_hit_ = false;
+        uint32_t hittable_id_;
         AVec3 point_;
         AVec3 normal_;
+        Material * mtl_;
+        BxDFBase * bxdf_;
+
+        void setNormal(AVec3 norm, AVec3 ray_dir){  // adjust the normal
+            if(ADot(norm, ray_dir) < 0.f){
+                normal_ = norm;
+            }
+            else{
+                normal_ = -norm;
+            }
+        }
     };
 }
 

@@ -13,10 +13,10 @@ namespace ALICE_TRACER{
         dir = transform  * dir;
     }
 
-    // Given a pixel and the resolution of the image, compute the camera ray
-    Ray Camera::computeRay(AVec2i pixel, AVec2i resolution) const {
+    // Given a pixel and the resolution of the image, compute a single camera ray shot from the center of the pixel
+    Ray Camera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const {
         // compute the direction of camera ray
-        AVec2 c_pixel = AVec2(pixel) + 0.5f; // center of the current pixel
+        AVec2 c_pixel = AVec2(pixel) + offset; // center of the current pixel
         float tan_alpha = tan(fov_/2.f);
         AVec3 dir{-1.f, (2. * c_pixel.x/resolution.x - 1.f)* ratio_ * tan_alpha ,(-2.f * c_pixel.y/resolution.y + 1.f) * tan_alpha };
         dir = ANormalize(dir);
@@ -26,4 +26,5 @@ namespace ALICE_TRACER{
         Color color{AVec3(0.f)};
         return {pos_, dir, time, color};
     }
+
 }

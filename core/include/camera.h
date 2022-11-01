@@ -21,8 +21,11 @@ namespace ALICE_TRACER{
         // transfer the camera coordinate to the world cooridnate
         void cameraToWorld(AVec3 & dir) const;
 
-        // Given a pixel and the resolution of the image, compute the camera ray
-        Ray computeRay(AVec2i pixel, AVec2i resolution) const;
+        /*
+        / Given a pixel and the resolution of the image, compute the camera ray
+        / offset for sampling multiple direction within one pixel
+        */
+        Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const;
 
     public:
         float near_;

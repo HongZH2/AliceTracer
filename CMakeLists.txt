@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.20)
 project(Alice_Tracer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -10,6 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 set(ALICE_TRACER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_subdirectory(third_parties/glfw)
 add_subdirectory(utils)
 add_subdirectory(core)
 add_subdirectory(interface)
