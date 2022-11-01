@@ -19,11 +19,13 @@ namespace ALICE_TRACER{
         Scene();
         ~Scene();
 
-        Color computePixel(AVec2i pixel, AVec2i resolution);
+        Color computePixel(AVec2i pixel, AVec2i resolution);  // start the Monte Carlo
         void addCamera(Camera & camera);
         void addHittable(Hittable * hittable);
         void removeHittable(Hittable * hittable);
+
         inline void setNumOfSamples(uint32_t num_of_samples){ num_of_samples_ = num_of_samples;}
+
     private:
         void traceRay(Ray & ray, uint32_t iteration);        // to trace any ray
         void doShading(HitRes & hit_res, Ray & in_ray, Ray & out_ray);        // do the shading math

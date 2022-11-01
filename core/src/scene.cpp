@@ -64,6 +64,7 @@ namespace ALICE_TRACER{
     void Scene::doShading(HitRes &hit_res, Ray &in_ray, Ray &out_ray) {
         // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
         if(!hit_res.bxdf_) assert("BxDF is null!!\n");
+        // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
         AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
         in_ray.color_.rgb_ = bxdf * out_ray.color_.rgb_;
     }
@@ -76,8 +77,9 @@ namespace ALICE_TRACER{
         // set the offset with one pixel
         ALICE_UTILS::AVec2 offset;
         Color pixel_col;
-        // sample multiple times 
+        // sample multiple times
         for(uint32_t i = 0; i < num_of_samples_; ++i) {
+            // randomly assign the offset [0.f - 1.f]
             offset = ALICE_UTILS::AVec2(ALICE_TRACER::random_val<float>(),
                                         ALICE_TRACER::random_val<float>());
             ALICE_TRACER::Ray cam_ray = camera_->getSingleRay(pixel, resolution, offset);
@@ -86,7 +88,7 @@ namespace ALICE_TRACER{
             traceRay(cam_ray, max_num_recursion_);
             pixel_col.rgb_ += cam_ray.color_.rgb_;
         }
-        pixel_col.rgb_ /= (float)num_of_samples_;
+        pixel_col.rgb_ /= (float)num_of_samples_; // average the results
 
         // transfer linear space to gamma space
         pixel_col.rgb_ = toGammaSpace(pixel_col.rgb_);
