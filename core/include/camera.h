@@ -12,7 +12,12 @@
 using namespace ALICE_UTILS;
 
 namespace ALICE_TRACER{
-    // Camera Class: pin-hole model
+
+    /*
+     * Camera Class: pin-hole model
+     * Here, the default camera is set to the pin-hole model
+     * It will have a little different in this implement between the ones from other source
+     */
     class Camera{
     public:
         Camera() = default;
@@ -25,7 +30,7 @@ namespace ALICE_TRACER{
         / Given a pixel and the resolution of the image, compute the camera ray
         / offset for sampling multiple direction within one pixel
         */
-        Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const;
+        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const;
 
     public:
         float near_;
@@ -35,9 +40,23 @@ namespace ALICE_TRACER{
         AVec3 pos_;
 
         // the pose of the camera
-        AVec3 forward_;
-        AVec3 head_up_;
-        AVec3 right_;
+        AVec3 forward_ = AVec3(0.f, 0.f, 1.f);
+        AVec3 head_up_ = AVec3(0.f, 1.f, 0.f);
+        AVec3 right_ = AVec3(1.f, 0.f, 0.f);
+    };
+
+
+    /*
+     * Thin-Len Camera with the naive simplification
+     * refer: https://raytracing.github.io/books/RayTracingInOneWeekend.html#defocusblur
+     */
+    class ThinLenCamera: public Camera{
+    public:
+        ThinLenCamera() = default;
+        ~ThinLenCamera() = default;
+        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const override;
+    public:
+        float aperture_ = 0.f; // the
     };
 
 

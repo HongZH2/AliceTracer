@@ -8,7 +8,10 @@
 #include <thread>
 #include <vector>
 #include <array>
+#include <queue>
 #include <random>
+#include <mutex>
+#include <condition_variable>
 #include <cstdint>
 
 namespace ALICE_UTILS {

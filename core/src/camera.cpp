@@ -3,6 +3,7 @@
 //
 
 #include "core/include/camera.h"
+#include "core/include/random_variable.h"
 
 namespace ALICE_TRACER{
 
@@ -25,6 +26,24 @@ namespace ALICE_TRACER{
         float time = 0.f;
         Color color{AVec3(0.f)};
         return {pos_, dir, time, color};
+    }
+
+
+    Ray ThinLenCamera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const {
+        float lens_radius = aperture_/2.f;
+        AVec2 len_offset = lens_radius * 2.f * offset - 0.5f;
+        AVec3 look_from = pos_ + head_up_ * len_offset.y + right_ * len_offset.x;
+
+        // compute the direction of camera ray
+        AVec2 c_pixel = AVec2(pixel) - len_offset; // center of the current pixel
+        float tan_alpha = tan(fov_/2.f);
+        AVec3 dir{-1.f, (2. * c_pixel.x/resolution.x - 1.f)* ratio_ * tan_alpha ,(-2.f * c_pixel.y/resolution.y + 1.f) * tan_alpha };
+        dir = ANormalize(dir);
+        cameraToWorld(dir);
+        // time
+        float time = 0.f;
+        Color color{AVec3(0.f)};
+        return {look_from, dir, time, color};
     }
 
 }
