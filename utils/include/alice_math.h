@@ -15,6 +15,7 @@
 #include "third_parties/glm/gtc/type_ptr.hpp"
 #include <cmath>
 namespace ALICE_UTILS {
+    #define MIN_THRESHOLD 1e-5
     // vector
     typedef glm::vec3 AVec3;
     typedef glm::vec2 AVec2;

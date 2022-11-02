@@ -16,8 +16,14 @@ namespace ALICE_TRACER{
     public:
         Material() = default;
         virtual ~Material() = default;
+        Color emit_ = Color(0.f);
         Color albedo_;
     };
+
+    /*
+     * Class Diffuse emitted material
+     */
+
 
 //    /*
 //     * Define the Lambert Material

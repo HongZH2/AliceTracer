@@ -36,7 +36,7 @@ int main(){
     ALICE_TRACER::Camera camera;
     camera.near_ = 0.1f;
     camera.far_ = 100.f;
-    camera.fov_ = ARadians(90.f);
+    camera.fov_ = ARadians(120.f);
     camera.ratio_ = w_h_ratio;
     camera.pos_ = AVec3(0.f, 0.f, 4.f);
 //    camera.aperture_ = 0.1f;
@@ -60,9 +60,11 @@ int main(){
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere sphere1{AVec3(0.f, 0.f, 3.f), 0.2f, &mtl1, &lambert};
-    ALICE_TRACER::Sphere sphere2{AVec3(-2.f, 0.f, -5.f), 3.f, &mtl2, &lambert};
+    ALICE_TRACER::Sphere sphere1{AVec3(2.5f, 0.f, 0.f), 1.f, &mtl1, &lambert};
+    ALICE_TRACER::Sphere sphere2{AVec3(-3.5f, 0.f, 0.f), 1.f, &mtl2, &lambert};
     ALICE_TRACER::Sphere sphere3{AVec3(1.f, -101.f, 0.f), 100.f, &mtl3, &lambert};
+   //ALICE_TRACER::Rectangle rect1{AVec3(0.f, 0.f, 0.f), AVec2(0.5f, 0.f), AVec3(0.f, 0.f, 1.f), &mtl2, &lambert};
+
 
     // set up the scene
     ALICE_TRACER::Scene scene;
@@ -70,6 +72,7 @@ int main(){
     scene.addHittable(&sphere1);
     scene.addHittable(&sphere2);
     scene.addHittable(&sphere3);
+   // scene.addHittable(&rect1);
 
     // generate the image pixel by pixel
     // submit multiple

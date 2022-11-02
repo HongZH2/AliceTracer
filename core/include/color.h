@@ -13,6 +13,12 @@ namespace ALICE_TRACER{
     public:
         Color() = default;
         ~Color() = default;
+        Color(float val){
+            rgb_ = AVec3(val);
+        }
+        Color(AVec3 val){
+            rgb_ = val;
+        }
 
         // convert the float value [0., 1.] to the unsigned integer [0, 255]
         AVec3i ToUInt() const{

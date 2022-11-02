@@ -83,9 +83,8 @@ namespace ALICE_TRACER{
     public:
         inline AVec3 center() const{return center_;}
         inline float radius() const{return radius_;}
-
-        AVec3 center(float frame_time);
     public:
+        AVec3 center(float frame_time);
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
     private:
@@ -93,19 +92,25 @@ namespace ALICE_TRACER{
         float radius_;
     };
 
-//    // Cube
-//    class Cube: public Hittable{
-//        Cube(AVec3 center, float length);
-//        ~Cube() override = default;
-//
-//        AVec3 center() const{return center_;}
-//        float length() const{return length_;}
-//
-//        AVec3 getNormal(AVec3 & point) override;
-//    private:
-//        AVec3 center_;
-//        float length_;
-//    };
+    // Rectangle
+    class Rectangle: public Hittable{
+    public:
+        Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf);
+        Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~Rectangle() override = default;
+    public:
+        inline AVec3 center() const{return center_;}
+        inline AVec2 size() const{return size_;}
+        inline AVec3 normal() const{return normal_;}
+    public:
+        AVec3 center(float frame_time);
+        AVec3 getNormal(AVec3 & point) override;
+        float CheckHittable(Ray & ray) override;
+    private:
+        AVec3 center_;
+        AVec3 normal_;
+        AVec2 size_;
+    };
 
 
 }
