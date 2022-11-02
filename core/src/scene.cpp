@@ -4,7 +4,7 @@
 
 #include "core/include/scene.h"
 #include "core/include/random_variable.h"
-#include "core/include/tone_mapping.h"
+#include "core/include/post_process.h"
 
 namespace ALICE_TRACER{
 
@@ -57,6 +57,8 @@ namespace ALICE_TRACER{
 
         out_ray.start_ = hit_res.point_;
         out_ray.dir_ = dir;
+        out_ray.time_ = 0.f;
+        out_ray.fm_t_ = hit_res.frame_time_;
 
         return out_ray;
     }

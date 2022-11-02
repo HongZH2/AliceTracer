@@ -28,6 +28,7 @@ namespace ALICE_TRACER{
             hit_res_.hittable_id_ = id;
             hit_res_.mtl_ = mtl;
             hit_res_.bxdf_ = bxdf;
+            hit_res_.frame_time_ = ray.fm_t_;
             AVec3 normal = hittable_array_[id]->getNormal(hit_res_.point_);
             hit_res_.setNormal(normal, ray.dir_);
         }

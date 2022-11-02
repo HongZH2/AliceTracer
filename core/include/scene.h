@@ -31,7 +31,7 @@ namespace ALICE_TRACER{
         void doShading(HitRes & hit_res, Ray & in_ray, Ray & out_ray);        // do the shading math
         Ray generateSampleRay(HitRes & hit_res);
 
-        uint32_t num_of_samples_ = 100;  // the number of the samples per pixel
+        uint32_t num_of_samples_ = 5;  // the number of the samples per pixel
         uint32_t max_num_recursion_ = 5; // the maximum number of the tracing recursion
         Camera * camera_;
         HittableCluster * cluster_;

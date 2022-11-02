@@ -12,16 +12,31 @@ namespace ALICE_TRACER{
 
     }
 
+    Hittable::Hittable(Material *mtl, BxDFBase *bxdf, Movement * movement): mtl_(mtl), bxdf_(bxdf), movement_(movement) {
+
+    }
+
     Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf)
             : Hittable(mtl, bxdf), center_(center), radius_(radius) {
+    }
+
+    Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf, Movement * movement)
+            : Hittable(mtl, bxdf, movement), center_(center), radius_(radius) {
     }
 
     AVec3 Sphere::getNormal(AVec3 &point) {
         return ANormalize(point - center_);
     }
 
+    AVec3 Sphere::center(float frame_time) {
+        if(movement_){
+            return movement_->movementFunc(center_, frame_time);
+        }
+        return center_;
+    }
+
     float Sphere::CheckHittable(Ray & ray) {
-        AVec3 oc = ray.start_ - center_;
+        AVec3 oc = ray.start_ - center(ray.fm_t_);
         float a = dot(ray.dir_, ray.dir_);
         float b = 2.f * dot(oc, ray.dir_);
         float c = dot(oc, oc) - radius_ * radius_;

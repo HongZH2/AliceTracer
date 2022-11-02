@@ -25,7 +25,9 @@ namespace ALICE_TRACER{
         // time
         float time = 0.f;
         Color color{AVec3(0.f)};
-        return {pos_, dir, time, color};
+        // frame time
+        float frame_time = start_fm_ + interval_ * random_val<float>();
+        return {pos_, dir, time, color, frame_time};
     }
 
 
@@ -43,7 +45,9 @@ namespace ALICE_TRACER{
         // time
         float time = 0.f;
         Color color{AVec3(0.f)};
-        return {look_from, dir, time, color};
+        // frame time
+        float frame_time = start_fm_ + interval_ * random_val<float>();
+        return {look_from, dir, time, color, frame_time};
     }
 
 }

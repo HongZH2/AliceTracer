@@ -8,6 +8,15 @@
 #include "material.h"
 
 namespace ALICE_TRACER{
+
+    // --------------------------------------
+    // Helper Function For Evaluation of BxDF
+    // --------------------------------------
+
+
+    // --------------------------------------
+    // BxDF Definition
+    // --------------------------------------
     /*
      * Define the BxDF base class
      */
@@ -37,6 +46,15 @@ namespace ALICE_TRACER{
         AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
         AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) override;
     };
+
+//    /*
+//     * Disney Diffuse
+//     */
+//    class DisneyDiff:: public BxDFBase{
+//    public:
+//        DisneyDiff() = default;
+//        ~DisneyDiff() = default;
+//    };
 
 
 }

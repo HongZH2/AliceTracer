@@ -37,6 +37,8 @@ namespace ALICE_TRACER{
         float far_;
         float fov_;
         float ratio_;  // width/height
+        float start_fm_;  // start frame time
+        float interval_;  // the interval of the open shutter
         AVec3 pos_;
 
         // the pose of the camera

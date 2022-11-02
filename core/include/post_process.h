@@ -2,13 +2,15 @@
 // Created by Hong Zhang on 2022/10/28.
 //
 
-#ifndef ALICE_TRACER_TONE_MAPPING_H
-#define ALICE_TRACER_TONE_MAPPING_H
+#ifndef ALICE_TRACER_POST_PROCESS_H
+#define ALICE_TRACER_POST_PROCESS_H
 
 #include "utils/include/alice_math.h"
 
 namespace ALICE_TRACER{
-
+    // -----------------------------
+    // -- Color Space Transition ---
+    // -----------------------------
     // transfer the data from the linear space to the gamma space
     template<typename T>
     T toGammaSpace(T & val){
@@ -21,6 +23,9 @@ namespace ALICE_TRACER{
         return APow(val, AVec3(2.2f));
     }
 
+    // -----------------------------
+    // -- Tone Mapping ---
+    // -----------------------------
 
 
 
@@ -29,4 +34,4 @@ namespace ALICE_TRACER{
 }
 
 
-#endif //ALICE_TRACER_TONE_MAPPING_H
+#endif //ALICE_TRACER_POST_PROCESS_H

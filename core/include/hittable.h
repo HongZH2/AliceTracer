@@ -9,6 +9,7 @@
 #include "utils/include/alice_common.h"
 #include "utils/include/alice_math.h"
 #include "core/include/ray.h"
+#include "core/include/movement.h"
 
 using namespace ALICE_UTILS;
 namespace ALICE_TRACER{
@@ -45,6 +46,7 @@ namespace ALICE_TRACER{
     class Hittable{
     public:
         Hittable(Material * mtl, BxDFBase * bxdf);
+        Hittable(Material * mtl, BxDFBase * bxdf, Movement * movement);
         virtual ~Hittable() = default;
 
     public:
@@ -67,18 +69,22 @@ namespace ALICE_TRACER{
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         BoundingLimit * bound_ = nullptr;
+        Movement * movement_ = nullptr;
     };
+
 
     // Sphere
     class Sphere: public Hittable{
     public:
         Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf);
+        Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~Sphere() override = default;
 
     public:
-        AVec3 center() const{return center_;}
-        float radius() const{return radius_;}
+        inline AVec3 center() const{return center_;}
+        inline float radius() const{return radius_;}
 
+        AVec3 center(float frame_time);
     public:
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
