@@ -78,10 +78,11 @@ int main(){
     // submit multiple
     uint32_t num_pack = 8;
     uint32_t num_column = ceil(result_image.h()/num_pack);
+    std::vector<std::thread> threads{num_pack};
     for(uint32_t n = 0; n < num_pack; ++n){
         // submit the task
-        auto t = std::thread([&](){
-            for (uint32_t i = n * num_column; i < (n + 1) * num_column && i < result_image.h(); ++i) {
+        threads[n] = std::thread([&](uint32_t cur_n){
+            for (uint32_t i = cur_n * num_column; i < (cur_n + 1) * num_column && i < result_image.h(); ++i) {
                 for (uint32_t j = 0; j < result_image.w(); ++j) {
                     // get the current pixel and re
                     AVec2i pixel{j, i};
@@ -96,7 +97,10 @@ int main(){
                     }
                 }
             }
-        });
+        }, n);
+    }
+
+    for(auto & t: threads){
         t.join();
     }
 
@@ -114,7 +118,6 @@ int main(){
     }
     widgets.destroyImGui();
     window.releaseWindow();
-
 
     stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
 
