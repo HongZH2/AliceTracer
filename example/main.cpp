@@ -90,7 +90,7 @@ int main(){
     rectL.translate(AVec3(0.f, 1.4f, 0.f));
 
     // set up the scene
-    ALICE_TRACER::Scene scene{500, 5};
+    ALICE_TRACER::Scene scene{300, 5};
     scene.addCamera(camera);
     scene.addHittable(&sphere1);
     scene.addHittable(&sphere2);
@@ -102,7 +102,7 @@ int main(){
 
     // generate the image pixel by pixel
     // submit multiple
-    uint32_t num_pack = 4;
+    uint32_t num_pack = 8;
     uint32_t num_column = ceil(result_image.h()/num_pack);
     std::vector<std::thread> threads{num_pack};
     for(uint32_t n = 0; n < num_pack; ++n){
