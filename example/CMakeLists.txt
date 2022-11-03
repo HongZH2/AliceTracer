@@ -1,21 +1,38 @@
 cmake_minimum_required(VERSION 3.0)
 project(Example)
 
+###############
+# Third Parties
+###############
 # glfw
 set(GLFW_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/glfw/include)
 set(GLFW_LIB ${ALICE_TRACER_ROOT}/third_parties/glfw/lib/libglfw3.a)
 
 # imgui
 set(IMGUI_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/imgui/)
+file(GLOB IMGUI_SRC
+        ${ALICE_TRACER_ROOT}/third_parties/imgui/*.h
+        ${ALICE_TRACER_ROOT}/third_parties/imgui/*.cpp
+        ${ALICE_TRACER_ROOT}/third_parties/imgui/backends/imgui_impl_glfw.*
+        ${ALICE_TRACER_ROOT}/third_parties/imgui/backends/imgui_impl_opengl3*)
+# spdlog
+set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
 
+# opengl
+find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+
+###############
+# Third Parties
+###############
 include_directories(
         ${ALICE_TRACER_ROOT}
         ${GLFW_INCLUDE}
         ${IMGUI_INCLUDE}
         ${IMGUI_INCLUDE}/backends/
+        ${SPDLOG_INCLUDE}
 )
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp ${IMGUI_SRC})
 
 find_library(OPENGL_LIBRARY OpenGL REQUIRED)
 find_library(COCOA_LIBRARY Cocoa REQUIRED)
@@ -29,6 +46,5 @@ target_link_libraries(
         ${IOKIT_LIBRARY}
         ${COREVID_LIBRARY}
         ${GLFW_LIB}
-        AliceCore
-        AliceInterface
+        Alice_Tracer
 )

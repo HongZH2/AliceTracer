@@ -7,6 +7,9 @@
 
 #include "utils/include/alice_common.h"
 #include "core/include/image.h"
+#ifdef __APPLE__
+#define GL_SILENCE_DEPRECATION
+#endif
 
 namespace ALICE_TRACER{
     class TextureBuffer{

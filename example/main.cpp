@@ -11,7 +11,6 @@
 #include "core/include/image.h"
 #include "core/include/camera.h"
 #include "core/include/scene.h"
-#include "utils/include/alice_threads.h"
 
 // stb image
 #define STB_IMAGE_WRITE_IMPLEMENTATION

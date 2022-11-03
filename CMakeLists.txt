@@ -10,8 +10,42 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 set(ALICE_TRACER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(third_parties/glfw)
-add_subdirectory(utils)
-add_subdirectory(core)
-add_subdirectory(interface)
+###############
+# Third Parties
+###############
+# glfw
+set(GLFW_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/glfw/include)
+
+# imgui
+set(IMGUI_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/imgui/)
+
+# spdlog
+set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
+
+# opengl
+find_library(OPENGL_LIBRARY OpenGL REQUIRED)
+
+###############
+# Alice Tracer
+###############
+# Alice Tracer include
+include_directories(
+        ${ALICE_TRACER_ROOT}
+        ${IMGUI_INCLUDE}
+        ${IMGUI_INCLUDE}/backends/
+        ${GLFW_INCLUDE}
+        ${SPDLOG_INCLUDE}
+        ${OPENGL_INCLUDE_DIR})
+
+# Alice Tracer sources
+file(GLOB ALICE_TRACER_SRC
+        ${ALICE_TRACER_ROOT}/core/src/*.cpp
+        ${ALICE_TRACER_ROOT}/interface/src/*.cpp)
+
+message(STATUS ${ALICE_TRACER_SRC})
+
+add_library(${PROJECT_NAME}
+        ${ALICE_TRACER_SRC}
+        )
+
 add_subdirectory(example)

@@ -2,7 +2,6 @@
 // Created by Hong Zhang on 2022/10/30.
 //
 #include "interface/include/render_texture.h"
-#define GL_SILENCE_DEPRECATION
 #include "OpenGL/gl3.h"
 
 namespace ALICE_TRACER{
