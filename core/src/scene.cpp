@@ -40,15 +40,16 @@ namespace ALICE_TRACER{
                 // step 2. trace the new ray
                 traceRay(out_ray, iteration - 1);
                 // step 3. shading/evaluate the BxDF
+//                in_ray.color_ = hit_res.normal_;
                 doShading(hit_res, in_ray, out_ray);
                 return;
             }
         }
         // or not. we can do something else instead. For instance, sampling a skybox
-        AVec3 unit_direction = in_ray.dir_;
-        float t = 0.5*(unit_direction.y + 1.0);
-        in_ray.color_ = (1.0f - t) * AVec3(1.0, 1.0, 1.0) + t*AVec3(0.5, 0.7, 1.0);
-//        in_ray.color_ = AVec3(0.f);
+//        AVec3 unit_direction = in_ray.dir_;
+//        float t = 0.5f * (unit_direction.y + 1.0f);
+//        in_ray.color_ = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t*AVec3(0.5f, 0.7f, 1.0f);
+        in_ray.color_ = AVec3(0.f);
 
     }
 

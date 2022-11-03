@@ -50,8 +50,8 @@ int main(){
     // material
     ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
     ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
-    ALICE_TRACER::Material mtl3{ AVec3(1.f)};
-    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(4.f)};
+    ALICE_TRACER::Material mtl3{ AVec3(0.2f)};
+    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(8.f)};
 
     // movement
 //    ALICE_TRACER::LinearMovement mv1;
@@ -62,24 +62,47 @@ int main(){
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
     ALICE_TRACER::Sphere sphere1{&mtl1, &lambert};
+    sphere1.scale(AVec3(0.5f));
+    sphere1.translate(AVec3(1.f, 0.f, 0.f));
     ALICE_TRACER::Sphere sphere2{&mtl2, &lambert};
-    ALICE_TRACER::Sphere sphere3{&mtl3, &lambert};
-    ALICE_TRACER::RectangleXY rect1{&mtl4, &lambert};
-    rect1.translate(AVec3(0.5f, 0.5f, 0.f));
-    rect1.scale(AVec3(2.f));
-    rect1.rotate(ARadians(80.f), AVec3(1.f, 0.f, 0.f));
-//    rect1.translate(AVec3(1.f, 1.f, 0.f));
+    sphere2.scale(AVec3(0.5f));
+    sphere2.translate(AVec3(-1.f, 0.f, 0.f));
+    ALICE_TRACER::RectangleXY rect1{&mtl3, &lambert};
+    rect1.scale(AVec3(5.f));
+    rect1.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rect1.translate(AVec3(0.f, 1.5f, 0.f));
+    ALICE_TRACER::RectangleXY rect2{&mtl3, &lambert};
+    rect2.scale(AVec3(5.f));
+    rect2.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rect2.translate(AVec3(0.f, -1.5f, 0.f));
+    ALICE_TRACER::RectangleXY rect3{&mtl3, &lambert};
+    rect3.scale(AVec3(5.f));
+    rect3.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
+    rect3.translate(AVec3(2.5f, 0.f, 0.f));
+    ALICE_TRACER::RectangleXY rect4{&mtl3, &lambert};
+    rect4.scale(AVec3(5.f));
+    rect4.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
+    rect4.translate(AVec3(-2.5f, 0.f, 0.f));
+
+    ALICE_TRACER::RectangleXY rectL{&mtl4, &lambert};
+    rectL.scale(AVec3(1.f));
+    rectL.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rectL.translate(AVec3(0.f, 1.4f, 0.f));
+
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
+    ALICE_TRACER::Scene scene{500, 5};
     scene.addCamera(camera);
-//    scene.addHittable(&sphere1);
-//    scene.addHittable(&sphere2);
-//    scene.addHittable(&sphere3);
+    scene.addHittable(&sphere1);
+    scene.addHittable(&sphere2);
     scene.addHittable(&rect1);
+    scene.addHittable(&rect2);
+    scene.addHittable(&rect3);
+    scene.addHittable(&rect4);
+    scene.addHittable(&rectL);
 
     // generate the image pixel by pixel
     // submit multiple
-    uint32_t num_pack = 6;
+    uint32_t num_pack = 4;
     uint32_t num_column = ceil(result_image.h()/num_pack);
     std::vector<std::thread> threads{num_pack};
     for(uint32_t n = 0; n < num_pack; ++n){

@@ -20,7 +20,7 @@ namespace ALICE_TRACER{
         virtual void removeHittableInst(uint32_t id) = 0;
 
     protected:
-        float t_min_ = 0.f;
+        float t_min_ = MIN_THRESHOLD;
         float t_max_ = MAXFLOAT;
     };
 

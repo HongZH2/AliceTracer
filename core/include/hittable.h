@@ -58,17 +58,15 @@ namespace ALICE_TRACER{
         /*
          * transform
          */
-        virtual void translate(AVec3 offset);
-        virtual void scale(AVec3 scale);
-        virtual void rotate(float angle, AVec3 axis);
+        virtual void translate(AVec3 offset) = 0;
+        virtual void scale(AVec3 scale) = 0;
+        virtual void rotate(float angle, AVec3 axis) = 0;
     protected:
         uint32_t id_;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         BoundingLimit * bound_ = nullptr;
         Movement * movement_ = nullptr;
-        AMat4 transform_mat_ = AMat4(1.f);  // transformation
-        AMat4 rot_mat_ = AMat4(1.f);  // rotation
     };
 
 
@@ -85,6 +83,10 @@ namespace ALICE_TRACER{
         AVec3 center(float frame_time);
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
+    public:
+        void translate(AVec3 offset) override;
+        void scale(AVec3 scale) override;
+        void rotate(float angle, AVec3 axis) override;
     private:
         AVec3 center_ = AVec3(0.f);
         float radius_ = 1.f;
@@ -97,17 +99,21 @@ namespace ALICE_TRACER{
         RectangleXY(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~RectangleXY() override = default;
     public:
-        inline AVec3 center() const{return center_;}
-        inline AVec2 size() const{return size_;}
-        inline AVec3 normal() const{return normal_;}
-
-        AVec3 center(float frame_time);
+        inline AVec2 area() const{return area_;}
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
+    public:
+        void translate(AVec3 offset) override;
+        void scale(AVec3 scale) override;
+        void rotate(float angle, AVec3 axis) override;
     private:
-        AVec3 center_ = AVec3(0.f);
-        AVec3 normal_ = AVec3(0.f, 0.f, 1.f);
-        AVec2 size_ = AVec2(1.f, 1.f);
+        AVec3 cornel(float frame_time);
+
+        AVec3 l_b_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
+        AVec2 area_ = AVec2(1.f); // area
+        AVec3 norm_ = AVec3(0.f, 0.f, 1.f); // normal
+        AVec3 u_w_ = AVec3(1.f, 0.f, 0.f);  // u axis
+        AVec3 v_h_ = AVec3(0.f, 1.f, 0.f); // v axis
     };
 
 
