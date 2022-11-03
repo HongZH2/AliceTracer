@@ -9,7 +9,7 @@
 #include "utils/include/alice_common.h"
 #include "utils/include/alice_math.h"
 #include "core/include/ray.h"
-#include "core/include/movement.h"
+#include "movement.h"
 
 using namespace ALICE_UTILS;
 namespace ALICE_TRACER{
@@ -30,15 +30,6 @@ namespace ALICE_TRACER{
     private:
         AVec3 b_min_, b_max_;
     };
-
-//    class BoundingSphere: public BoundingLimit{
-//    public:
-//        BoundingSphere() = default;
-//        ~BoundingSphere() override = default;
-//    private:
-//        AVec3 center_;
-//        float radius_;
-//    };
 
     // ------------------------------------------------------------
     // The Hittable Objects/Surfaces/Volume
@@ -64,52 +55,59 @@ namespace ALICE_TRACER{
          * Check if it is hit or not
          */
         virtual float CheckHittable(Ray & ray) = 0;
+        /*
+         * transform
+         */
+        virtual void translate(AVec3 offset);
+        virtual void scale(AVec3 scale);
+        virtual void rotate(float angle, AVec3 axis);
     protected:
         uint32_t id_;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         BoundingLimit * bound_ = nullptr;
         Movement * movement_ = nullptr;
+        AMat4 transform_mat_ = AMat4(1.f);  // transformation
+        AMat4 rot_mat_ = AMat4(1.f);  // rotation
     };
 
 
     // Sphere
     class Sphere: public Hittable{
     public:
-        Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf);
-        Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf, Movement * movement);
+        Sphere(Material *mtl, BxDFBase *bxdf);
+        Sphere(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~Sphere() override = default;
 
     public:
         inline AVec3 center() const{return center_;}
         inline float radius() const{return radius_;}
-    public:
         AVec3 center(float frame_time);
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
     private:
-        AVec3 center_;
-        float radius_;
+        AVec3 center_ = AVec3(0.f);
+        float radius_ = 1.f;
     };
 
     // Rectangle
-    class Rectangle: public Hittable{
+    class RectangleXY: public Hittable{
     public:
-        Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf);
-        Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf, Movement * movement);
-        ~Rectangle() override = default;
+        RectangleXY(Material *mtl, BxDFBase *bxdf);
+        RectangleXY(Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~RectangleXY() override = default;
     public:
         inline AVec3 center() const{return center_;}
         inline AVec2 size() const{return size_;}
         inline AVec3 normal() const{return normal_;}
-    public:
+
         AVec3 center(float frame_time);
         AVec3 getNormal(AVec3 & point) override;
         float CheckHittable(Ray & ray) override;
     private:
-        AVec3 center_;
-        AVec3 normal_;
-        AVec2 size_;
+        AVec3 center_ = AVec3(0.f);
+        AVec3 normal_ = AVec3(0.f, 0.f, 1.f);
+        AVec2 size_ = AVec2(1.f, 1.f);
     };
 
 

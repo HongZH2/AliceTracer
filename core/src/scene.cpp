@@ -9,7 +9,8 @@
 
 namespace ALICE_TRACER{
 
-    Scene::Scene() {
+    Scene::Scene(uint32_t num_sample_per_pixel, uint32_t max_num_iteration):
+                num_of_samples_(num_sample_per_pixel), max_num_iteration_(max_num_iteration){
         cluster_ = new ClusterList();
     }
 
@@ -46,7 +47,8 @@ namespace ALICE_TRACER{
         // or not. we can do something else instead. For instance, sampling a skybox
         AVec3 unit_direction = in_ray.dir_;
         float t = 0.5*(unit_direction.y + 1.0);
-        in_ray.color_.rgb_ = (1.0f - t) * AVec3(1.0, 1.0, 1.0) + t*AVec3(0.5, 0.7, 1.0);
+        in_ray.color_ = (1.0f - t) * AVec3(1.0, 1.0, 1.0) + t*AVec3(0.5, 0.7, 1.0);
+//        in_ray.color_ = AVec3(0.f);
 
     }
 
@@ -73,8 +75,8 @@ namespace ALICE_TRACER{
 
     void Scene::doShading(HitRes &hit_res, Ray &in_ray, Ray &out_ray) {
         // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
-        if(!hit_res.bxdf_) {
-            AliceLog::submitDebugLog("BxDF is null!!\n");
+        if(!hit_res.bxdf_ || !hit_res.mtl_) {
+            AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
             return;
         }
         // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
@@ -83,7 +85,7 @@ namespace ALICE_TRACER{
             AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
             return;
         }
-        in_ray.color_.rgb_ = bxdf * out_ray.color_.rgb_;
+        in_ray.color_ = hit_res.mtl_->emit() + bxdf * out_ray.color_.ToVec3();
     }
 
     Color Scene::computePixel(AVec2i pixel, AVec2i resolution) {
@@ -103,13 +105,13 @@ namespace ALICE_TRACER{
             ALICE_TRACER::Ray cam_ray = camera_->getSingleRay(pixel, resolution, offset);
             // compute the color
             // ... start path tracing
-            traceRay(cam_ray, max_num_recursion_);
-            pixel_col.rgb_ += cam_ray.color_.rgb_;
+            traceRay(cam_ray, max_num_iteration_);
+            pixel_col += cam_ray.color_;
         }
-        pixel_col.rgb_ /= (float)num_of_samples_; // average the results
+        pixel_col /= (float)num_of_samples_; // average the results
 
         // transfer linear space to gamma space
-        pixel_col.rgb_ = toGammaSpace(pixel_col.rgb_);
+        pixel_col = toGammaSpace(pixel_col);
 
         return pixel_col;
     }

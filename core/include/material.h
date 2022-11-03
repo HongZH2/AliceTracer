@@ -14,45 +14,25 @@ namespace ALICE_TRACER{
 
     class Material {
     public:
-        Material() = default;
+        explicit Material(AVec3 albedo): albedo_(albedo){}
         virtual ~Material() = default;
-        Color emit_ = Color(0.f);
+
+        virtual Color emit(){ return {0.f};}
+        inline Color albedo(){return albedo_;}
+    protected:
         Color albedo_;
     };
 
-    /*
-     * Class Diffuse emitted material
-     */
+    class EmitMaterial: public Material{
+    public:
+        EmitMaterial(AVec3 albedo, AVec3 emit): Material(albedo), emit_(emit){}
+        ~EmitMaterial() override = default;
 
+        Color emit() override{ return emit_;};
 
-//    /*
-//     * Define the Lambert Material
-//     */
-//    class LambertDiffuse: public Material{
-//    public:
-//        explicit LambertDiffuse(Color albedo);
-//        ~LambertDiffuse() override;
-//        Color albedo_;
-//    };
-
-//    /*
-//     * Define the Metal Material
-//     */
-//    class Metal: public Material{
-//    public:
-//        Metal(Color reflectance, float roughness);
-//        ~Metal();
-//        float roughness_;
-//    };
-//
-//    /*
-//     * Define the Dielectrics
-//     */
-//    class Dielectric: public Material{
-//    public:
-//        Dielectric(Color albedo, float roughtness);
-//        ~Dielectric();
-//    };
+    protected:
+        Color emit_;
+    };
 }
 
 

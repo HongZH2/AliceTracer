@@ -16,8 +16,11 @@ namespace ALICE_TRACER{
         Color(float val){
             rgb_ = AVec3(val);
         }
-        Color(AVec3 val){
-            rgb_ = val;
+        Color(float val1, float val2, float val3){
+            rgb_ = AVec3(val1, val2, val3);
+        }
+        Color(AVec3 col){
+            rgb_ = col;
         }
 
         // convert the float value [0., 1.] to the unsigned integer [0, 255]
@@ -26,21 +29,71 @@ namespace ALICE_TRACER{
             return temp * 255.f;
         }
 
+        AVec3 ToVec3() const {
+            return rgb_;
+        }
+
         float & operator[](int32_t i){
             return rgb_[i];
         }
 
-        Color & operator=(const Color & c){
-            rgb_ = c.rgb_;
-            return *this;
-        }
+        inline Color & operator=(const Color & c)= default;
 
-        Color & operator=(const AVec3 & col){
+        inline  Color & operator=(const AVec3 & col){
             rgb_ = col;
             return *this;
         }
 
-    public:
+        inline Color operator+(const Color & c) const{
+            Color temp;
+            temp.rgb_ = c.rgb_ + rgb_;
+            return temp;
+        }
+
+        inline Color operator-(const Color & c) const{
+            Color temp;
+            temp.rgb_ = c.rgb_ - rgb_;
+            return temp;
+        }
+
+        inline Color operator/(const Color & c) const{
+            Color temp;
+            temp.rgb_ = c.rgb_ / rgb_;
+            return temp;
+        }
+
+        inline Color operator*(const Color & c) const{
+            Color temp;
+            temp.rgb_ = c.rgb_ * rgb_;
+            return temp;
+        }
+
+        inline Color & operator+=(const Color & c){
+            rgb_ += c.rgb_;
+            return *this;
+        }
+
+        inline Color & operator-=(const Color & c){
+            rgb_ -= c.rgb_;
+            return *this;
+        }
+
+        inline Color & operator *=(const Color & c){
+            rgb_ *= c.rgb_;
+            return *this;
+        }
+
+        inline Color & operator/=(const Color & c){
+            rgb_ /= c.rgb_;
+            return *this;
+        }
+
+        inline Color & operator/=(const float & c){
+            rgb_ /= c;
+            return *this;
+        }
+
+    protected:
         AVec3 rgb_; // [0., 1.]
     };
 }

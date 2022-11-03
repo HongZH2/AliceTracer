@@ -16,16 +16,33 @@ namespace ALICE_TRACER{
 
     }
 
-    Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf)
-            : Hittable(mtl, bxdf), center_(center), radius_(radius) {
+    void Hittable::translate(AVec3 offset) {
+        transform_mat_ = ATranslate(transform_mat_, -offset);
     }
 
-    Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf, Movement * movement)
-            : Hittable(mtl, bxdf, movement), center_(center), radius_(radius) {
+    void Hittable::scale(AVec3 scale) {
+        transform_mat_ = AScale(transform_mat_, 1.f/scale);
+    }
+
+    void Hittable::rotate(float angle, AVec3 axis) {
+        rot_mat_ = ARotate(rot_mat_, -angle, axis);
+        transform_mat_ = ARotate(transform_mat_, -angle, axis);
+    }
+
+    // --------------------
+    // -- Rectangle
+    // --------------------
+
+    Sphere::Sphere(Material *mtl, BxDFBase *bxdf)
+            : Hittable(mtl, bxdf){
+    }
+
+    Sphere::Sphere(Material *mtl, BxDFBase *bxdf, Movement * movement)
+            : Hittable(mtl, bxdf, movement){
     }
 
     AVec3 Sphere::getNormal(AVec3 &point) {
-        return ANormalize(point - center_);
+        return  ANormalize(point - center_);
     }
 
     AVec3 Sphere::center(float frame_time) {
@@ -36,9 +53,12 @@ namespace ALICE_TRACER{
     }
 
     float Sphere::CheckHittable(Ray & ray) {
-        AVec3 oc = ray.start_ - center(ray.fm_t_);
-        float a = dot(ray.dir_, ray.dir_);
-        float b = 2.f * dot(oc, ray.dir_);
+        AVec3 start = transform_mat_ * AVec4(ray.start_, 1.f);
+        AVec3 dir = rot_mat_ * AVec4(ray.dir_, 1.f);
+
+        AVec3 oc = start - center(ray.fm_t_);
+        float a = dot(dir, dir);
+        float b = 2.f * dot(oc, dir);
         float c = dot(oc, oc) - radius_ * radius_;
         float discriminant = b*b - 4.f * a * c;
         if (discriminant < 0.f) {
@@ -48,34 +68,40 @@ namespace ALICE_TRACER{
         }
     }
 
-    Rectangle::Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf):
-            Hittable(mtl, bxdf), center_(center), size_(size), normal_(norm) {
+    // --------------------
+    // -- Rectangle
+    // --------------------
+    RectangleXY::RectangleXY(Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf){
 
     }
 
-    Rectangle::Rectangle(AVec3 center, AVec2 size, AVec3 norm, Material *mtl, BxDFBase *bxdf, Movement * movement):
-            Hittable(mtl, bxdf, movement), center_(center), size_(size), normal_(norm) {
+    RectangleXY::RectangleXY(Material *mtl, BxDFBase *bxdf, Movement * movement):
+            Hittable(mtl, bxdf, movement){
 
     }
 
-    AVec3 Rectangle::center(float frame_time) {
+    AVec3 RectangleXY::center(float frame_time) {
         if(movement_){
             return movement_->movementFunc(center_, frame_time);
         }
         return center_;
     }
 
-    AVec3 Rectangle::getNormal(AVec3 &point) {
+    AVec3 RectangleXY::getNormal(AVec3 &point) {
         return normal_;
     }
 
-    float Rectangle::CheckHittable(Ray &ray) {
-        float ldotn = ADot(ray.dir_, normal_);
+    float RectangleXY::CheckHittable(Ray &ray) {
+        AVec3 start = transform_mat_ * AVec4(ray.start_, 1.f);
+        AVec3 dir = rot_mat_ * AVec4(ray.dir_, 1.f);
+
+        float ldotn = ADot(dir, normal_);
         if(abs(ldotn) < MIN_THRESHOLD)
             return MAXFLOAT;
-        float time = ADot(center(ray.fm_t_) - ray.start_, normal_)/ ldotn;
-        AVec3 size = ray.start_ + time * ray.dir_ - center(ray.fm_t_);
-        if(abs(size.x) < size_.x/2.f && abs(size.y) < size_.y/2.)
+        float time = ADot(center(ray.fm_t_) - start, normal_)/ ldotn;
+        AVec3 size = start + time * dir - center(ray.fm_t_);
+        if(abs(size.x) < size_.x / 2.f && abs(size.y) < size_.y / 2.f)
             return time;
         return MAXFLOAT;
     }

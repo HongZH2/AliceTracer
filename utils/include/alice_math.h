@@ -129,7 +129,7 @@ namespace ALICE_UTILS {
     // translation
     template <typename T>
     inline decltype(auto) ARotate (T const& mat, float angle, AVec3 const& vec){
-        return glm::rotate(mat, ARadians(angle), vec);
+        return glm::rotate(mat, angle, vec);
     }
 
     // lookAt transformation

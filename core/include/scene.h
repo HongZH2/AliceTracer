@@ -16,7 +16,7 @@ namespace ALICE_TRACER{
      */
     class Scene{
     public:
-        Scene();
+        Scene(uint32_t num_sample_per_pixel, uint32_t max_num_iteration);
         ~Scene();
 
         Color computePixel(AVec2i pixel, AVec2i resolution);  // start the Monte Carlo
@@ -31,8 +31,8 @@ namespace ALICE_TRACER{
         void doShading(HitRes & hit_res, Ray & in_ray, Ray & out_ray);        // do the shading math
         Ray generateSampleRay(HitRes & hit_res);
 
-        uint32_t num_of_samples_ = 5;  // the number of the samples per pixel
-        uint32_t max_num_recursion_ = 5; // the maximum number of the tracing recursion
+        uint32_t num_of_samples_ = 1;  // the number of the samples per pixel
+        uint32_t max_num_iteration_ = 1; // the maximum number of the tracing recursion
         Camera * camera_;
         HittableCluster * cluster_;
     };

@@ -1,5 +1,5 @@
 //
-// Created by zhanghong50 on 2022/11/2.
+// Created by zhanghong50 on 2022/11/3.
 //
 
 #ifndef ALICE_TRACER_MOVEMENT_H
@@ -9,12 +9,11 @@
 using namespace ALICE_UTILS;
 
 namespace ALICE_TRACER{
-
     // Define some movement
     class Movement{
     public:
         Movement() = default;
-        ~Movement() = default;
+        virtual ~Movement() = default;
         float start_ = 0.f;
         float end_ = 0.f;
 
@@ -27,7 +26,7 @@ namespace ALICE_TRACER{
     class LinearMovement: public Movement{
     public:
         LinearMovement() = default;
-        ~LinearMovement() = default;
+        ~LinearMovement() override = default;
         AVec3 velocity_;
         virtual AVec3 movementFunc(AVec3 pos, float time) override;
     };

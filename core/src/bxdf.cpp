@@ -9,7 +9,7 @@ namespace ALICE_TRACER{
 
     AVec3 LambertBRDF::evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) {
         // we take the cos<> term as the pdf, so that cos<> term in the render equation is cancelled.
-        return mtl->albedo_.rgb_ * (float)M_1_PI;
+        return mtl->albedo().ToVec3() * (float)M_1_PI;
     }
 
     AVec3 LambertBRDF::sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) {

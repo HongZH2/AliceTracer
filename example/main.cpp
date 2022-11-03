@@ -48,12 +48,10 @@ int main(){
 
     // set up the scene
     // material
-    ALICE_TRACER::Material mtl1;
-    mtl1.albedo_ = AVec3(0.9f, 1.f, 0.f);
-    ALICE_TRACER::Material mtl2{};
-    mtl2.albedo_ = AVec3(1.f, 0.f, 0.f);
-    ALICE_TRACER::Material mtl3;
-    mtl3.albedo_ = AVec3(1.f);
+    ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
+    ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
+    ALICE_TRACER::Material mtl3{ AVec3(1.f)};
+    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(4.f)};
 
     // movement
 //    ALICE_TRACER::LinearMovement mv1;
@@ -63,23 +61,25 @@ int main(){
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere sphere1{AVec3(1.5f, 0.f, 0.f), 0.3f, &mtl1, &lambert};
-    ALICE_TRACER::Sphere sphere2{AVec3(-1.5f, 0.f, 0.f), 0.3f, &mtl2, &lambert};
-    ALICE_TRACER::Sphere sphere3{AVec3(1.f, -101.f, 0.f), 100.7f, &mtl3, &lambert};
-    ALICE_TRACER::Rectangle rect1{AVec3(0.f, 1.f, 0.f), AVec2(1.f, 1.f), AVec3(0.f, 0.f, 1.f), &mtl2, &lambert};
-
-
+    ALICE_TRACER::Sphere sphere1{&mtl1, &lambert};
+    ALICE_TRACER::Sphere sphere2{&mtl2, &lambert};
+    ALICE_TRACER::Sphere sphere3{&mtl3, &lambert};
+    ALICE_TRACER::RectangleXY rect1{&mtl4, &lambert};
+    rect1.translate(AVec3(0.5f, 0.5f, 0.f));
+    rect1.scale(AVec3(2.f));
+    rect1.rotate(ARadians(80.f), AVec3(1.f, 0.f, 0.f));
+//    rect1.translate(AVec3(1.f, 1.f, 0.f));
     // set up the scene
-    ALICE_TRACER::Scene scene;
+    ALICE_TRACER::Scene scene{5, 5};
     scene.addCamera(camera);
-    scene.addHittable(&sphere1);
-    scene.addHittable(&sphere2);
-    scene.addHittable(&sphere3);
+//    scene.addHittable(&sphere1);
+//    scene.addHittable(&sphere2);
+//    scene.addHittable(&sphere3);
     scene.addHittable(&rect1);
 
     // generate the image pixel by pixel
     // submit multiple
-    uint32_t num_pack = 8;
+    uint32_t num_pack = 6;
     uint32_t num_column = ceil(result_image.h()/num_pack);
     std::vector<std::thread> threads{num_pack};
     for(uint32_t n = 0; n < num_pack; ++n){
@@ -90,10 +90,8 @@ int main(){
                     // get the current pixel and re
                     AVec2i pixel{j, i};
                     ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
-
                     // float to unsigned int 255
                     AVec3i color = pixel_col.ToUInt();
-
                     // assign the color to RGB channel
                     for (uint32_t c = 0; c < result_image.c(); ++c) {
                         result_image(i, j, c) = color[c];
