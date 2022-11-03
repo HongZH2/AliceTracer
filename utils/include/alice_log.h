@@ -5,13 +5,6 @@
 #ifndef ALICE_TRACER_LOG_H
 #define ALICE_TRACER_LOG_H
 
-#ifdef DEBUG
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-#endif // DEBUG
-#include "spdlog/spdlog.h"
-
-namespace AliceAPI{
-
 // macro for log type
 #define ALICE_LOG_DEBUG SPDLOG_DEBUG
 #define ALICE_LOG_TRACE SPDLOG_TRACE
@@ -23,41 +16,46 @@ namespace AliceAPI{
 #define ALICE_INFO_LEVEL SPDLOG_LEVEL_INFO
 #define ALICE_WARN_LEVEL SPDLOG_LEVEL_WARN
 
-typedef spdlog::level::level_enum AliceLogType;
+#include "spdlog/spdlog.h"
 
-class AliceLog{
-public:
-    AliceLog();
-    ~AliceLog();
+namespace ALICE_TRACER{
+    typedef spdlog::level::level_enum AliceLogType;
 
-    // void setLogPattern();
-    static void setLogLevel(const AliceLogType & log_t);
-    
-    template<typename... Args>
-    static inline void submitDebugLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
-    {
-        spdlog::default_logger_raw()->debug(fmt, std::forward<Args>(args)...);
-    }
+    class AliceLog{
+    public:
+        AliceLog() = default;
+        ~AliceLog() = default;
 
-    template<typename... Args>
-    static inline void submitWarnLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
-    {
-        spdlog::default_logger_raw()->warn(fmt, std::forward<Args>(args)...);
-    }
+        // void setLogPattern();
+        static void setLogLevel(const AliceLogType & log_t){
+            spdlog::set_level(log_t);
+        }
 
-    template<typename... Args>
-    static inline void submitInfoLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
-    {
-        spdlog::default_logger_raw()->info(fmt, std::forward<Args>(args)...);
-    }
+        template<typename... Args>
+        static inline void submitDebugLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
+        {
+            spdlog::default_logger_raw()->debug(fmt, std::forward<Args>(args)...);
+        }
 
-    template<typename... Args>
-    static inline void submitTraceLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
-    {
-        spdlog::default_logger_raw()->trace(fmt, std::forward<Args>(args)...);
-    }
+        template<typename... Args>
+        static inline void submitWarnLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
+        {
+            spdlog::default_logger_raw()->warn(fmt, std::forward<Args>(args)...);
+        }
 
-};
+        template<typename... Args>
+        static inline void submitInfoLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
+        {
+            spdlog::default_logger_raw()->info(fmt, std::forward<Args>(args)...);
+        }
+
+        template<typename... Args>
+        static inline void submitTraceLog(spdlog::format_string_t<Args...> fmt, Args &&... args)
+        {
+            spdlog::default_logger_raw()->trace(fmt, std::forward<Args>(args)...);
+        }
+
+    };
 
 }
 

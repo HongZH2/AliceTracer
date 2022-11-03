@@ -17,6 +17,10 @@
 #include "third_parties/stb_image/stb_write.h"
 
 int main(){
+
+    // set the log level
+    ALICE_TRACER::AliceLog::setLogLevel(ALICE_TRACER::AliceLogType::debug);
+
     uint32_t width = 1200u;
     uint32_t height = 800u;
     float w_h_ratio = (float)width/(float)height;
@@ -102,7 +106,6 @@ int main(){
     for(auto & t: threads){
         t.join();
     }
-
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
