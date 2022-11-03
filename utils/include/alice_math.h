@@ -15,7 +15,7 @@
 #include "third_parties/glm/gtc/type_ptr.hpp"
 #include <cmath>
 namespace ALICE_UTILS {
-    #define MIN_THRESHOLD 1e-5
+    #define MIN_THRESHOLD 1e-4
     // vector
     typedef glm::vec3 AVec3;
     typedef glm::vec2 AVec2;
@@ -33,6 +33,11 @@ namespace ALICE_UTILS {
     typedef glm::mat2x2 AMat2;
 
     // functions
+    template <typename T>
+    inline decltype(auto) AIsNan(const T & vec){
+        return glm::all(glm::isnan(vec));
+    }
+
     template <typename T>
     inline decltype(auto) APow(const T & vec, const T & index){
         return glm::pow(vec, index);

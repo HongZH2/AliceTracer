@@ -24,7 +24,7 @@ namespace ALICE_TRACER{
 
         // transform the outward vector from local coordinate to global coordinate
         AVec3 up;
-        normal.z > 0.9999 ? up = AVec3(1.f, 0.f, 0.f) : up = AVec3(0.f, 0.f, 1.f);
+        abs(normal.z) > 0.9999f ? up = AVec3(1.f, 0.f, 0.f) : up = AVec3(0.f, 0.f, 1.f);
         AVec3 tangent = normalize(cross(up, normal));
         AVec3 bitangent = cross(normal, tangent);
 

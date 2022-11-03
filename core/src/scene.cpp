@@ -5,6 +5,7 @@
 #include "core/include/scene.h"
 #include "core/include/random_variable.h"
 #include "core/include/post_process.h"
+#include "utils/include/alice_log.h"
 
 namespace ALICE_TRACER{
 
@@ -52,33 +53,48 @@ namespace ALICE_TRACER{
     Ray Scene::generateSampleRay(HitRes &hit_res) {
         // query the material of the hittable instance, then generate a sample ray
         Ray out_ray;
-        if(!hit_res.bxdf_) assert("BxDF is null!!\n");
+        if(!hit_res.bxdf_) {
+            AliceLog::submitDebugLog("BxDF is null!!\n");
+            return out_ray;
+        }
         AVec3 dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
-
+        if(AIsNan(dir)){
+            AliceLog::submitDebugLog("sampler dir is null!!\n");
+            return out_ray;
+        }
         out_ray.start_ = hit_res.point_;
         out_ray.dir_ = dir;
         out_ray.time_ = 0.f;
         out_ray.fm_t_ = hit_res.frame_time_;
+        out_ray.color_ = AVec3(0.f);
 
         return out_ray;
     }
 
     void Scene::doShading(HitRes &hit_res, Ray &in_ray, Ray &out_ray) {
         // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
-        if(!hit_res.bxdf_) assert("BxDF is null!!\n");
+        if(!hit_res.bxdf_) {
+            AliceLog::submitDebugLog("BxDF is null!!\n");
+            return;
+        }
         // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
         AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
+        if(AIsNan(bxdf)){
+            AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
+            return;
+        }
         in_ray.color_.rgb_ = bxdf * out_ray.color_.rgb_;
     }
 
     Color Scene::computePixel(AVec2i pixel, AVec2i resolution) {
         if(!camera_){
-            assert("Camera is essential for the scene rendering!\n");
-            return Color{AVec3(0.f)};
+            AliceLog::submitDebugLog("Camera is essential for the scene rendering!\n");
+            return Color{0.f};
         }
         // set the offset with one pixel
         ALICE_UTILS::AVec2 offset;
         Color pixel_col;
+
         // sample multiple times
         for(uint32_t i = 0; i < num_of_samples_; ++i) {
             // randomly assign the offset [0.f - 1.f]

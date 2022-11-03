@@ -18,8 +18,9 @@ namespace ALICE_TRACER{
     Ray Camera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const {
         // compute the direction of camera ray
         AVec2 c_pixel = AVec2(pixel) + offset; // center of the current pixel
+        AVec2 c_resolution = AVec2(resolution) - 1.f;
         float tan_alpha = tan(fov_/2.f);
-        AVec3 dir{-1.f, (2. * c_pixel.x/resolution.x - 1.f)* ratio_ * tan_alpha ,(-2.f * c_pixel.y/resolution.y + 1.f) * tan_alpha };
+        AVec3 dir{-1.f, (2. * c_pixel.x/c_resolution.x - 1.f)* ratio_ * tan_alpha ,(-2.f * c_pixel.y/c_resolution.y + 1.f) * tan_alpha };
         dir = ANormalize(dir);
         cameraToWorld(dir);
         // time

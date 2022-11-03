@@ -10,9 +10,9 @@ namespace ALICE_TRACER{
         // brute force to find the closet intersection
         HitRes hit_res_;
         float time = MAXFLOAT;
-        uint32_t id = -1;
-        Material * mtl;
-        BxDFBase * bxdf;
+        uint32_t id = INT32_MAX;
+        Material * mtl = nullptr;
+        BxDFBase * bxdf = nullptr;
         for(auto const & hittable : hittable_array_){
             float t = hittable->CheckHittable(ray);
             if(t > 0.f && time > t){
@@ -32,7 +32,7 @@ namespace ALICE_TRACER{
             AVec3 normal = hittable_array_[id]->getNormal(hit_res_.point_);
             hit_res_.setNormal(normal, ray.dir_);
         }
-        return std::move(hit_res_);
+        return hit_res_;
     }
 
     void ClusterList::addHittableInst(Hittable *hittable_inst) {

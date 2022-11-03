@@ -19,18 +19,18 @@ namespace ALICE_TRACER{
         AVec3 dir_;
         float time_;  // time refers to fly time. Literally, intersection = start + time * dir;
         Color color_;
-        float fm_t_ = -MAXFLOAT; // fm_t refers to frame time.
+        float fm_t_ = -1.f; // fm_t refers to frame time.
     };
 
     // Hit Response
     struct HitRes{
         bool is_hit_ = false;
-        uint32_t hittable_id_;
-        float frame_time_;
+        uint32_t hittable_id_ = INT32_MAX;
+        float frame_time_ = -1;
         AVec3 point_;
         AVec3 normal_;
-        Material * mtl_;
-        BxDFBase * bxdf_;
+        Material * mtl_ = nullptr;
+        BxDFBase * bxdf_ = nullptr;
 
         void setNormal(AVec3 norm, AVec3 ray_dir){  // adjust the normal
             if(ADot(norm, ray_dir) < 0.f){

@@ -71,7 +71,7 @@ namespace ALICE_TRACER{
 
     float Rectangle::CheckHittable(Ray &ray) {
         float ldotn = ADot(ray.dir_, normal_);
-        if(ldotn < MIN_THRESHOLD)
+        if(abs(ldotn) < MIN_THRESHOLD)
             return MAXFLOAT;
         float time = ADot(center(ray.fm_t_) - ray.start_, normal_)/ ldotn;
         AVec3 size = ray.start_ + time * ray.dir_ - center(ray.fm_t_);
