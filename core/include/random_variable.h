@@ -14,6 +14,12 @@ namespace ALICE_TRACER {
         static std::mt19937 generator;
         return distribution(generator);
     }
+
+    inline int random_int(int min, int max) {
+        std::uniform_int_distribution<std::mt19937::result_type> distribution(min,max); // distribution in range [1, 6]
+        static std::mt19937 generator;
+        return distribution(generator);
+    }
 }
 
 #endif //ALICE_TRACER_RANDOM_VARIABLE_H

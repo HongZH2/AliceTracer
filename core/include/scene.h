@@ -35,7 +35,7 @@ namespace ALICE_TRACER{
         uint32_t num_of_samples_ = 1;  // the number of the samples per pixel
         uint32_t max_num_iteration_ = 1; // the maximum number of the tracing recursion
         Camera * camera_;
-        HittableCluster * cluster_;
+        ClusterList * cluster_;
         std::function<void(AVec3 &, AVec3 &)> background_func_ = nullptr;
     };
 }

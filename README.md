@@ -8,5 +8,5 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 ![](showcases/first_demo.png)
 - Area Lighting
 ![](showcases/area_lights.png)
-- Cornell Room
-![](showcases/cornell_room.png)
+- Cornell Box
+![](showcases/cornell_box.png)

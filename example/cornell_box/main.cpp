@@ -48,7 +48,7 @@ int main(){
 
     // set up the scene
     // material
-    ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
+    ALICE_TRACER::Material mtl1{AVec3(0.f, 1.f, 0.f)};
     ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
     ALICE_TRACER::Material mtl3{ AVec3(0.2f)};
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
@@ -80,11 +80,11 @@ int main(){
     rect2.scale(AVec3(4.f));
     rect2.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
     rect2.translate(AVec3(0.f, -2.f, 0.f));
-    ALICE_TRACER::RectangleXY rect3{&mtl3, &lambert};
+    ALICE_TRACER::RectangleXY rect3{&mtl1, &lambert};
     rect3.scale(AVec3(4.f));
     rect3.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
     rect3.translate(AVec3(2.f, 0.f, 0.f));
-    ALICE_TRACER::RectangleXY rect4{&mtl3, &lambert};
+    ALICE_TRACER::RectangleXY rect4{&mtl2, &lambert};
     rect4.scale(AVec3(4.f));
     rect4.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
     rect4.translate(AVec3(-2.f, 0.f, 0.f));
@@ -92,10 +92,10 @@ int main(){
     ALICE_TRACER::RectangleXY rectL{&mtl4, &lambert};
     rectL.scale(AVec3(1.f));
     rectL.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rectL.translate(AVec3(0.f, 1.4f, 0.f));
+    rectL.translate(AVec3(0.f, 1.98f, 0.f));
 
     // set up the scene
-    ALICE_TRACER::Scene scene{500, 5};
+    ALICE_TRACER::Scene scene{2000, 8};
     scene.addCamera(camera);
     scene.addHittable(&sphere1);
     scene.addHittable(&sphere2);

@@ -15,20 +15,22 @@ using namespace ALICE_UTILS;
 namespace ALICE_TRACER{
 
     // ------------------------------------------------------------
-    // The Base Class for Bounding Limits, Like BBOX, BSphere
+    // Axis Aligned Bounding Box
     // ------------------------------------------------------------
-    class BoundingLimit{
+    class AABB{
     public:
-        BoundingLimit() = default;
-        virtual ~BoundingLimit() = default;
-    };
+        AABB() = default;
+        AABB(AVec3 b_min, AVec3 b_max);
+        ~AABB() = default;
 
-    class BoundingBox: public BoundingLimit{
+        bool isInside(AABB & bbox1) const;
+        bool isHit(Ray & ray) const;
     public:
-        BoundingBox(AVec3 b_min, AVec3 b_max);
-        ~BoundingBox() override = default;
-    private:
-        AVec3 b_min_, b_max_;
+        static bool isOverlap(AABB &bbox1, AABB &bbox2);
+        static AABB overlapAABB(AABB & bbox1, AABB & bbox2);
+        static AABB unionAABB(AABB & bbox1, AABB & bbox2);
+    public:
+        AVec3 b_min_, b_max_;  // define the lower bound and upper bound
     };
 
     // ------------------------------------------------------------
@@ -36,39 +38,23 @@ namespace ALICE_TRACER{
     // ------------------------------------------------------------
     class Hittable{
     public:
+        Hittable() = default;
         Hittable(Material * mtl, BxDFBase * bxdf);
         Hittable(Material * mtl, BxDFBase * bxdf, Movement * movement);
         virtual ~Hittable() = default;
-
     public:
-        inline BoundingLimit * boundLimit(){return bound_;}
         inline void setID(uint32_t id) {id_ = id;}
         inline uint32_t ID() const{return id_;}
-        inline Material* mtl(){return mtl_;}
-        inline BxDFBase* bxdf(){return bxdf_;}
     public:
-        /*
-         * Compute the normal vector by the point
-         */
-        virtual AVec3 getNormal(AVec3 & point) = 0;
-        /*
-         * Check if it is hit or not
-         */
-        virtual float CheckHittable(Ray & ray) = 0;
-        /*
-         * transform
-         */
-        virtual void translate(AVec3 offset) = 0;
-        virtual void scale(AVec3 scale) = 0;
-        virtual void rotate(float angle, AVec3 axis) = 0;
+        virtual bool CheckHittable(Ray & ray, HitRes & hit_res) = 0;  // check if it is hit or not
+        virtual AABB * boundLimit(float frame_time);
     protected:
         uint32_t id_;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
-        BoundingLimit * bound_ = nullptr;
+        AABB * bound_ = nullptr;
         Movement * movement_ = nullptr;
     };
-
 
     // Sphere
     class Sphere: public Hittable{
@@ -77,17 +63,14 @@ namespace ALICE_TRACER{
         Sphere(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~Sphere() override = default;
 
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
     public:
-        inline AVec3 center() const{return center_;}
-        inline float radius() const{return radius_;}
-        AVec3 center(float frame_time);
-        AVec3 getNormal(AVec3 & point) override;
-        float CheckHittable(Ray & ray) override;
-    public:
-        void translate(AVec3 offset) override;
-        void scale(AVec3 scale) override;
-        void rotate(float angle, AVec3 axis) override;
+        void translate(AVec3 offset);
+        void scale(AVec3 scale);
+        void rotate(float angle, AVec3 axis) ;
     private:
+        AVec3 center(float frame_time);
         AVec3 center_ = AVec3(0.f);
         float radius_ = 1.f;
     };
@@ -98,17 +81,15 @@ namespace ALICE_TRACER{
         RectangleXY(Material *mtl, BxDFBase *bxdf);
         RectangleXY(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~RectangleXY() override = default;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
     public:
-        inline AVec2 area() const{return area_;}
-        AVec3 getNormal(AVec3 & point) override;
-        float CheckHittable(Ray & ray) override;
-    public:
-        void translate(AVec3 offset) override;
-        void scale(AVec3 scale) override;
-        void rotate(float angle, AVec3 axis) override;
+        void translate(AVec3 offset);
+        void scale(AVec3 scale);
+        void rotate(float angle, AVec3 axis);
     private:
         AVec3 cornel(float frame_time);
-
         AVec3 l_b_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
         AVec3 norm_ = AVec3(0.f, 0.f, 1.f); // normal

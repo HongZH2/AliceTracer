@@ -10,31 +10,35 @@
 #include "hittable.h"
 
 namespace ALICE_TRACER{
-    // A set of the hittable instances
-    class HittableCluster{
+    // -------------------------------
+    // BVH tree node
+    // -------------------------------
+    class BVHNode: public Hittable{
     public:
-        HittableCluster() = default;
-        virtual ~HittableCluster() = default;
-        virtual HitRes hitCheck(Ray & ray) = 0;
-        virtual void addHittableInst(Hittable * hittable_inst) = 0;
-        virtual void removeHittableInst(uint32_t id) = 0;
+        BVHNode() = default;
+        ~BVHNode() override = default;
 
-    protected:
-        float t_min_ = MIN_THRESHOLD;
-        float t_max_ = MAXFLOAT;
+        bool CheckHittable(Ray & ray, HitRes & hit_res);
+    public:
+        Hittable * left_ = nullptr;
+        Hittable * right_ = nullptr;
     };
 
-    // A naive hittable list
-    class ClusterList: public HittableCluster{
+    // -------------------------------
+    // A set of the hittable instances
+    // -------------------------------
+    class ClusterList{
     public:
         ClusterList() = default;
-        ~ClusterList() override = default;
+        ~ClusterList() = default;
 
-        HitRes hitCheck(Ray & ray) override;
-        void addHittableInst(Hittable * hittable_inst)override;
-        void removeHittableInst(uint32_t id)override;
-
+        HitRes hitCheck(Ray & ray);
+        void addHittableInst(Hittable * hittable_inst);
+        void removeHittableInst(uint32_t id);
+        void buildBVH();
     private:
+        void setUpBVH(Hittable * node, std::vector<Hittable *> hittable_list, uint32_t start, uint32_t end);
+        Hittable * bvh_tree_;
         std::vector<Hittable *> hittable_array_;  // a list of the hittable instances
     };
 

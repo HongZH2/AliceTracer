@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(Cornell_Room)
+project(Cornell_Box)
 
 ###############
 # Third Parties

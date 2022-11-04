@@ -33,6 +33,7 @@ namespace ALICE_UTILS {
     typedef glm::mat2x2 AMat2;
 
     // functions
+
     template <typename T>
     inline decltype(auto) AIsNan(const T & vec){
         return glm::all(glm::isnan(vec));

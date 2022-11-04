@@ -3,34 +3,63 @@
 //
 
 #include "core/include/accelerate_struct.h"
+#include "core/include/random_variable.h"
 
 namespace ALICE_TRACER{
+    // -------------------------------
+    // BVH tree node
+    // -------------------------------
+    bool BVHNode::CheckHittable(Ray &ray, HitRes &hit_res) {
+        AABB * bbox = boundLimit(ray.fm_t_);
+        if(bbox->isHit(ray)){
+            bool l_hit = left_->CheckHittable(ray, hit_res);
+            bool r_hit = right_->CheckHittable(ray, hit_res);
+            return l_hit || r_hit;
+        }
+        return false;
+    }
+
+    void ClusterList::buildBVH() {
+        // build BVH recursively
+        setUpBVH(bvh_tree_, hittable_array_, 0, hittable_array_.size());
+    }
+
+    void ClusterList::setUpBVH(Hittable *node, std::vector<Hittable *> hittable_list, uint32_t start, uint32_t end) {
+        if(start >= end && start == 0)
+            return;
+        node = new BVHNode();
+        auto hittable_inst = hittable_list;
+        // step 1. randomly select one axis
+        int32_t axis = random_int(0, 2);
+
+        // step 2. sort the list
+        if(start == end){
+            node->hittable_id_ = hittable_inst[start]->ID();
+        }
+        else{
+            std::sort(hittable_list);
+            uint32_t mid = (uint32_t)((start + end)/2);
+            setUpBVH(node->left_, ,start, mid);
+        }
+
+    }
 
     HitRes ClusterList::hitCheck(Ray & ray) {
-        // brute force to find the closet intersection
-        HitRes hit_res_;
-        float time = MAXFLOAT;
-        uint32_t id = INT32_MAX;
-        Material * mtl = nullptr;
-        BxDFBase * bxdf = nullptr;
-        for(auto const & hittable : hittable_array_){
-            float t = hittable->CheckHittable(ray);
-            if(t > MIN_THRESHOLD && time > t){
-                time = t;
-                id = hittable->ID();
-                mtl = hittable->mtl();
-                bxdf = hittable->bxdf();
+        HitRes hit_res;
+        float time = MAX_RAY_TIME;
+        bool is_hit = root_->CheckHittable(ray, hit_res);
+        if(is_hit){
+            uint32_t id = hit_res_.hittable_id_;
+            bool is_hit = hittable_array_[id]->CheckHittable(ray, hit_res);
+            if(time > MIN_RAY_TIME && time < MAX_RAY_TIME){
+                hit_res_.is_hit_ = true;
+                hit_res_.point_ = ray.start_ + time * ray.dir_;
+                hit_res_.mtl_ = hittable_array_[id]->mtl();
+                hit_res_.bxdf_ = hittable_array_[id]->bxdf();
+                hit_res_.frame_time_ = ray.fm_t_;
+                AVec3 normal = hittable_array_[id]->getNormal(hit_res_.point_);
+                hit_res_.setNormal(normal, ray.dir_);
             }
-        }
-        if(time < MAXFLOAT && time > t_min_ && time < t_max_){
-            hit_res_.is_hit_ = true;
-            hit_res_.point_ = ray.start_ + time * ray.dir_;
-            hit_res_.hittable_id_ = id;
-            hit_res_.mtl_ = mtl;
-            hit_res_.bxdf_ = bxdf;
-            hit_res_.frame_time_ = ray.fm_t_;
-            AVec3 normal = hittable_array_[id]->getNormal(hit_res_.point_);
-            hit_res_.setNormal(normal, ray.dir_);
         }
         return hit_res_;
     }
