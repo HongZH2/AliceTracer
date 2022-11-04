@@ -25,6 +25,7 @@ namespace ALICE_TRACER{
         void removeHittable(Hittable * hittable);
 
         inline void setNumOfSamples(uint32_t num_of_samples){ num_of_samples_ = num_of_samples;}
+        inline void setBgFunc(std::function<void(AVec3 &, AVec3 &)> func){ background_func_ = func;}  // set the background
 
     private:
         void traceRay(Ray & ray, uint32_t iteration);        // to trace any ray
@@ -35,6 +36,7 @@ namespace ALICE_TRACER{
         uint32_t max_num_iteration_ = 1; // the maximum number of the tracing recursion
         Camera * camera_;
         HittableCluster * cluster_;
+        std::function<void(AVec3 &, AVec3 &)> background_func_ = nullptr;
     };
 }
 

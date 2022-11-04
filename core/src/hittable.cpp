@@ -119,7 +119,7 @@ namespace ALICE_TRACER{
         return l_b_;
     }
 
-    float RectangleXY::CheckHittable(Ray &ray) {
+    float RectangleXY::CheckHittable(Ray &ray) {  // TODO: fix the precision issue
         float ldotn = ADot(ray.dir_, norm_);
         if(abs(ldotn) < MIN_THRESHOLD)
             return MAXFLOAT;

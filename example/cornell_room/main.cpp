@@ -95,7 +95,7 @@ int main(){
     rectL.translate(AVec3(0.f, 1.4f, 0.f));
 
     // set up the scene
-    ALICE_TRACER::Scene scene{200, 5};
+    ALICE_TRACER::Scene scene{500, 5};
     scene.addCamera(camera);
     scene.addHittable(&sphere1);
     scene.addHittable(&sphere2);

@@ -45,10 +45,14 @@ namespace ALICE_TRACER{
             }
         }
         // or not. we can do something else instead. For instance, sampling a skybox
-//        AVec3 unit_direction = in_ray.dir_;
-//        float t = 0.5f * (unit_direction.y + 1.0f);
-//        in_ray.color_ = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t*AVec3(0.5f, 0.7f, 1.0f);
-        in_ray.color_ = AVec3(0.f);
+        if(background_func_){
+            AVec3 col;
+            background_func_(in_ray.dir_, col);
+            in_ray.color_ = col;
+        }
+        else{
+            in_ray.color_ = AVec3(0.f);
+        }
 
     }
 
