@@ -15,7 +15,7 @@ namespace ALICE_TRACER{
         BxDFBase * bxdf = nullptr;
         for(auto const & hittable : hittable_array_){
             float t = hittable->CheckHittable(ray);
-            if(t > 0.f && time > t){
+            if(t > MIN_THRESHOLD && time > t){
                 time = t;
                 id = hittable->ID();
                 mtl = hittable->mtl();

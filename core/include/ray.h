@@ -33,7 +33,7 @@ namespace ALICE_TRACER{
         BxDFBase * bxdf_ = nullptr;
 
         void setNormal(AVec3 norm, AVec3 ray_dir){  // adjust the normal
-            if(ADot(norm, ray_dir) < 0.f){
+            if(ADot(norm, ray_dir) < -MIN_THRESHOLD){
                 normal_ = norm;
             }
             else{

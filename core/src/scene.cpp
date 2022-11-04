@@ -40,7 +40,6 @@ namespace ALICE_TRACER{
                 // step 2. trace the new ray
                 traceRay(out_ray, iteration - 1);
                 // step 3. shading/evaluate the BxDF
-//                in_ray.color_ = hit_res.normal_;
                 doShading(hit_res, in_ray, out_ray);
                 return;
             }

@@ -74,7 +74,7 @@ namespace ALICE_TRACER{
         float b = 2.f * dot(oc, ray.dir_);
         float c = dot(oc, oc) - radius_ * radius_;
         float discriminant = b*b - 4.f * a * c;
-        if (discriminant < 0.f) {
+        if (discriminant < MIN_THRESHOLD) {
             return -1.f;
         } else {
             return (- b - sqrt(discriminant) ) / (2.f * a);

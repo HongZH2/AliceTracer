@@ -51,7 +51,7 @@ int main(){
     ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
     ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
     ALICE_TRACER::Material mtl3{ AVec3(0.2f)};
-    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(8.f)};
+    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
 
     // movement
 //    ALICE_TRACER::LinearMovement mv1;
@@ -67,22 +67,27 @@ int main(){
     ALICE_TRACER::Sphere sphere2{&mtl2, &lambert};
     sphere2.scale(AVec3(0.5f));
     sphere2.translate(AVec3(-1.f, 0.f, 0.f));
+
+
+    ALICE_TRACER::RectangleXY rect0{&mtl3, &lambert};
+    rect0.scale(AVec3(4.f));
+    rect0.translate(AVec3(0.f, 0.f, -2.f));
     ALICE_TRACER::RectangleXY rect1{&mtl3, &lambert};
-    rect1.scale(AVec3(5.f));
+    rect1.scale(AVec3(4.f));
     rect1.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect1.translate(AVec3(0.f, 1.5f, 0.f));
+    rect1.translate(AVec3(0.f, 2.f, 0.f));
     ALICE_TRACER::RectangleXY rect2{&mtl3, &lambert};
-    rect2.scale(AVec3(5.f));
+    rect2.scale(AVec3(4.f));
     rect2.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect2.translate(AVec3(0.f, -1.5f, 0.f));
+    rect2.translate(AVec3(0.f, -2.f, 0.f));
     ALICE_TRACER::RectangleXY rect3{&mtl3, &lambert};
-    rect3.scale(AVec3(5.f));
+    rect3.scale(AVec3(4.f));
     rect3.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect3.translate(AVec3(2.5f, 0.f, 0.f));
+    rect3.translate(AVec3(2.f, 0.f, 0.f));
     ALICE_TRACER::RectangleXY rect4{&mtl3, &lambert};
-    rect4.scale(AVec3(5.f));
+    rect4.scale(AVec3(4.f));
     rect4.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect4.translate(AVec3(-2.5f, 0.f, 0.f));
+    rect4.translate(AVec3(-2.f, 0.f, 0.f));
 
     ALICE_TRACER::RectangleXY rectL{&mtl4, &lambert};
     rectL.scale(AVec3(1.f));
@@ -90,10 +95,11 @@ int main(){
     rectL.translate(AVec3(0.f, 1.4f, 0.f));
 
     // set up the scene
-    ALICE_TRACER::Scene scene{300, 5};
+    ALICE_TRACER::Scene scene{200, 5};
     scene.addCamera(camera);
     scene.addHittable(&sphere1);
     scene.addHittable(&sphere2);
+    scene.addHittable(&rect0);
     scene.addHittable(&rect1);
     scene.addHittable(&rect2);
     scene.addHittable(&rect3);
