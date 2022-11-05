@@ -63,40 +63,40 @@ int main(){
     ALICE_TRACER::LambertBRDF lambert;
 
     // instances
-    ALICE_TRACER::RectangleXY rect0{&mtl3, &lambert};
-    rect0.scale(AVec3(4.f));
-    rect0.translate(AVec3(0.f, 0.f, -2.f));
-    ALICE_TRACER::RectangleXY rect1{&mtl3, &lambert};
-    rect1.scale(AVec3(4.f));
-    rect1.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect1.translate(AVec3(0.f, 2.f, 0.f));
-    ALICE_TRACER::RectangleXY rect2{&mtl3, &lambert};
-    rect2.scale(AVec3(4.f));
-    rect2.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect2.translate(AVec3(0.f, -2.f, 0.f));
-    ALICE_TRACER::RectangleXY rect3{&mtl1, &lambert};
-    rect3.scale(AVec3(4.f));
-    rect3.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect3.translate(AVec3(2.f, 0.f, 0.f));
-    ALICE_TRACER::RectangleXY rect4{&mtl2, &lambert};
-    rect4.scale(AVec3(4.f));
-    rect4.rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect4.translate(AVec3(-2.f, 0.f, 0.f));
+    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
+    rect0->scale(AVec3(4.f));
+    rect0->translate(AVec3(0.f, 0.f, -2.f));
+    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
+    rect1->scale(AVec3(4.f));
+    rect1->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rect1->translate(AVec3(0.f, 2.f, 0.f));
+    ALICE_TRACER::RectangleXY * rect2 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
+    rect2->scale(AVec3(4.f));
+    rect2->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rect2->translate(AVec3(0.f, -2.f, 0.f));
+    ALICE_TRACER::RectangleXY * rect3 = new ALICE_TRACER::RectangleXY{&mtl1, &lambert};
+    rect3->scale(AVec3(4.f));
+    rect3->rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
+    rect3->translate(AVec3(2.f, 0.f, 0.f));
+    ALICE_TRACER::RectangleXY * rect4 = new ALICE_TRACER::RectangleXY{&mtl2, &lambert};
+    rect4->scale(AVec3(4.f));
+    rect4->rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
+    rect4->translate(AVec3(-2.f, 0.f, 0.f));
 
-    ALICE_TRACER::RectangleXY rectL{&mtl4, &lambert};
-    rectL.scale(AVec3(1.f));
-    rectL.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rectL.translate(AVec3(0.f, 1.98f, 0.f));
+    ALICE_TRACER::RectangleXY * rectL = new ALICE_TRACER::RectangleXY{&mtl4, &lambert};
+    rectL->scale(AVec3(1.f));
+    rectL->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rectL->translate(AVec3(0.f, 1.98f, 0.f));
 
     // set up the scene
-    ALICE_TRACER::Scene scene{200, 5};
+    ALICE_TRACER::Scene scene{5, 5};
     scene.addCamera(camera);
-    scene.addHittable(&rect0);
-    scene.addHittable(&rect1);
-    scene.addHittable(&rect2);
-    scene.addHittable(&rect3);
-    scene.addHittable(&rect4);
-    scene.addHittable(&rectL);
+    scene.addHittable(rect0);
+    scene.addHittable(rect1);
+    scene.addHittable(rect2);
+    scene.addHittable(rect3);
+    scene.addHittable(rect4);
+    scene.addHittable(rectL);
     scene.buildBVH();
 
     // generate the image pixel by pixel

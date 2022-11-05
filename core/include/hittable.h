@@ -41,21 +41,22 @@ namespace ALICE_TRACER{
         Hittable(Material * mtl, BxDFBase * bxdf);
         Hittable(Material * mtl, BxDFBase * bxdf, Movement * movement);
         virtual ~Hittable();
-    public:
-        inline void setID(uint32_t id) {id_ = id;}
-        inline uint32_t ID() const{return id_;}
-    public:
         virtual bool CheckHittable(Ray & ray, HitRes & hit_res) = 0;  // check if it is hit or not
         virtual AABB * boundLimit(float frame_time);
+
+        inline void setID(uint32_t id) {id_ = id;}
+        inline int32_t ID() const{return id_;}
     protected:
-        uint32_t id_;
+        int32_t id_ = -1;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         AABB * bound_ = nullptr;
         Movement * movement_ = nullptr;
     };
 
-    // Sphere
+    // ---------------
+    // -- Sphere -----
+    // ---------------
     class Sphere: public Hittable{
     public:
         Sphere(Material *mtl, BxDFBase *bxdf);
@@ -74,7 +75,9 @@ namespace ALICE_TRACER{
         float radius_ = 1.f;
     };
 
-    // Rectangle
+    // ---------------
+    // -- Rectangle --
+    // ---------------
     class RectangleXY: public Hittable{
     public:
         RectangleXY(Material *mtl, BxDFBase *bxdf);
@@ -95,7 +98,6 @@ namespace ALICE_TRACER{
         AVec3 u_w_ = AVec3(1.f, 0.f, 0.f);  // u axis
         AVec3 v_h_ = AVec3(0.f, 1.f, 0.f); // v axis
     };
-
 
 }
 

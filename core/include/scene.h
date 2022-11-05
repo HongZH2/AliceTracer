@@ -6,7 +6,7 @@
 #define ALICE_TRACER_SCENE_H
 
 #include "utils/include/alice_common.h"
-#include "accelerate_struct.h"
+#include "hittable_cluster.h"
 #include "camera.h"
 
 namespace ALICE_TRACER{

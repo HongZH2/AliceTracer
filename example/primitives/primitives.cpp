@@ -61,17 +61,17 @@ int main(){
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere sphere1{&mtl1, &lambert};
-    sphere1.scale(AVec3(0.3f));
-    sphere1.translate(AVec3(1.f, -0.3f, 0.f));
-    ALICE_TRACER::RectangleXY rect0{&mtl2, &lambert};
-    rect0.scale(AVec3(0.6f));
-    rect0.translate(AVec3(2.f, -0.3f, 0.f));
+    ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{&mtl1, &lambert};
+    sphere1->scale(AVec3(0.3f));
+    sphere1->translate(AVec3(1.f, -0.3f, 0.f));
+    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{&mtl2, &lambert};
+    rect0->scale(AVec3(0.6f));
+    rect0->translate(AVec3(2.f, -0.3f, 0.f));
 
-    ALICE_TRACER::RectangleXY rect1{&mtl3, &lambert};
-    rect1.scale(AVec3(8.f, 6.f, 1.f));
-    rect1.rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect1.translate(AVec3(0.f, -0.6f, 0.f));
+    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
+    rect1->scale(AVec3(8.f, 6.f, 1.f));
+    rect1->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
+    rect1->translate(AVec3(0.f, -0.6f, 0.f));
 
     // set up the scene
     ALICE_TRACER::Scene scene{5, 5};
@@ -80,9 +80,9 @@ int main(){
         col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
     });
     scene.addCamera(camera);
-    scene.addHittable(&sphere1);
-    scene.addHittable(&rect1);
-    scene.addHittable(&rect0);
+    scene.addHittable(sphere1);
+    scene.addHittable(rect1);
+    scene.addHittable(rect0);
     scene.buildBVH();
 
     // generate the image pixel by pixel

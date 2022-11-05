@@ -10,3 +10,4 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 ![](showcases/area_lights.png)
 - Cornell Box
 ![](showcases/cornell_box.png)
+![](showcases/cornell_box2.png)

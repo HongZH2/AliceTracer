@@ -38,7 +38,8 @@ namespace ALICE_TRACER{
 
     void Scene::traceRay(Ray & in_ray, uint32_t iteration) {
         if(iteration > 0) {
-            HitRes hit_res = cluster_->hitCheck(in_ray);
+            HitRes hit_res;
+            cluster_->CheckHittable(in_ray, hit_res);
             if (hit_res.is_hit_) {
                 // if it is hit by some certain hittable instance
                 // step 1. generate the out ray from the hitting point
