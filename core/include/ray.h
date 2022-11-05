@@ -17,9 +17,11 @@ namespace ALICE_TRACER{
     struct Ray{
         AVec3 start_;
         AVec3 dir_;
-        float time_;  // time refers to fly time. Literally, intersection = start + time * dir;
+        float time_ = MAX_RAY_TIME;  // time refers to fly time. Literally, intersection = start + time * dir;
         Color color_;
         float fm_t_ = -1.f; // fm_t refers to frame time.
+        float t_min_ = MIN_RAY_TIME;
+        float t_max_ = MAX_RAY_TIME;
     };
 
     // Hit Response

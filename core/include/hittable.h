@@ -5,7 +5,6 @@
 #ifndef ALICE_TRACER_HITTABLE_H
 #define ALICE_TRACER_HITTABLE_H
 
-
 #include "utils/include/alice_common.h"
 #include "utils/include/alice_math.h"
 #include "core/include/ray.h"
@@ -25,10 +24,10 @@ namespace ALICE_TRACER{
 
         bool isInside(AABB & bbox1) const;
         bool isHit(Ray & ray) const;
+        void overlapAABB(AABB & bbox1, AABB & bbox2);
+        void unionAABB(AABB & bbox1, AABB & bbox2);
     public:
         static bool isOverlap(AABB &bbox1, AABB &bbox2);
-        static AABB overlapAABB(AABB & bbox1, AABB & bbox2);
-        static AABB unionAABB(AABB & bbox1, AABB & bbox2);
     public:
         AVec3 b_min_, b_max_;  // define the lower bound and upper bound
     };
@@ -38,10 +37,10 @@ namespace ALICE_TRACER{
     // ------------------------------------------------------------
     class Hittable{
     public:
-        Hittable() = default;
+        Hittable();
         Hittable(Material * mtl, BxDFBase * bxdf);
         Hittable(Material * mtl, BxDFBase * bxdf, Movement * movement);
-        virtual ~Hittable() = default;
+        virtual ~Hittable();
     public:
         inline void setID(uint32_t id) {id_ = id;}
         inline uint32_t ID() const{return id_;}

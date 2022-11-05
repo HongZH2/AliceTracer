@@ -21,47 +21,46 @@ namespace ALICE_TRACER{
 
     void ClusterList::buildBVH() {
         // build BVH recursively
-        setUpBVH(bvh_tree_, hittable_array_, 0, hittable_array_.size());
+        setUpBVH(bvh_tree_, hittable_array_);
     }
 
-    void ClusterList::setUpBVH(Hittable *node, std::vector<Hittable *> hittable_list, uint32_t start, uint32_t end) {
-        if(start >= end && start == 0)
+    void ClusterList::setUpBVH(Hittable* & node, std::vector<Hittable *> & hittable_list) {
+        if(hittable_array_.size() <= 0)
             return;
-        node = new BVHNode();
-        auto hittable_inst = hittable_list;
+        if(hittable_list.size() == 1){
+            node = hittable_list[0];
+            return;
+        }
+        std::vector<Hittable *> hittable_inst = hittable_list;
         // step 1. randomly select one axis
         int32_t axis = random_int(0, 2);
-
         // step 2. sort the list
-        if(start == end){
-            node->hittable_id_ = hittable_inst[start]->ID();
-        }
-        else{
-            std::sort(hittable_list);
-            uint32_t mid = (uint32_t)((start + end)/2);
-            setUpBVH(node->left_, ,start, mid);
-        }
+        std::sort(hittable_inst.begin(), hittable_inst.end(), [axis](Hittable * t1, Hittable * t2){
+           AABB* bbox1 = t1->boundLimit(0.f);  // check the initial bounding box
+           AABB* bbox2 = t2->boundLimit(0.f);
+           return bbox1->b_min_[axis] < bbox2->b_min_[axis];
+        });
+        // create a BVH node
+        node = new BVHNode();
+        BVHNode * bvh_node = (BVHNode *)node;
+        uint32_t mid = (hittable_inst.size())/2;
+        std::vector<Hittable *> left_list {hittable_inst.begin(), hittable_inst.begin() + mid};
+        std::vector<Hittable *> right_list {hittable_inst.begin() + mid, hittable_inst.end()};
 
+        setUpBVH(bvh_node->left_, left_list);
+        setUpBVH(bvh_node->right_, right_list);
+
+        bvh_node->split_axis_ = axis;
+        bvh_node->num_instance_ = (int32_t)(hittable_inst.size());
+        AABB* bbox = bvh_node->boundLimit(0.f);
+        bbox->unionAABB(*bvh_node->left_->boundLimit(0.f), *bvh_node->right_->boundLimit(0.f));
     }
 
     HitRes ClusterList::hitCheck(Ray & ray) {
         HitRes hit_res;
-        float time = MAX_RAY_TIME;
-        bool is_hit = root_->CheckHittable(ray, hit_res);
-        if(is_hit){
-            uint32_t id = hit_res_.hittable_id_;
-            bool is_hit = hittable_array_[id]->CheckHittable(ray, hit_res);
-            if(time > MIN_RAY_TIME && time < MAX_RAY_TIME){
-                hit_res_.is_hit_ = true;
-                hit_res_.point_ = ray.start_ + time * ray.dir_;
-                hit_res_.mtl_ = hittable_array_[id]->mtl();
-                hit_res_.bxdf_ = hittable_array_[id]->bxdf();
-                hit_res_.frame_time_ = ray.fm_t_;
-                AVec3 normal = hittable_array_[id]->getNormal(hit_res_.point_);
-                hit_res_.setNormal(normal, ray.dir_);
-            }
-        }
-        return hit_res_;
+        if(bvh_tree_)
+            bvh_tree_->CheckHittable(ray, hit_res);
+        return hit_res;
     }
 
     void ClusterList::addHittableInst(Hittable *hittable_inst) {

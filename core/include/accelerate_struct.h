@@ -11,17 +11,20 @@
 
 namespace ALICE_TRACER{
     // -------------------------------
-    // BVH tree node
+    // BVH tree node:
+    // inherit the hittable class, we will use the AABB to
     // -------------------------------
     class BVHNode: public Hittable{
     public:
         BVHNode() = default;
         ~BVHNode() override = default;
 
-        bool CheckHittable(Ray & ray, HitRes & hit_res);
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
     public:
         Hittable * left_ = nullptr;
         Hittable * right_ = nullptr;
+        int32_t split_axis_ = -1;
+        int32_t num_instance_ = -1;
     };
 
     // -------------------------------
@@ -37,7 +40,7 @@ namespace ALICE_TRACER{
         void removeHittableInst(uint32_t id);
         void buildBVH();
     private:
-        void setUpBVH(Hittable * node, std::vector<Hittable *> hittable_list, uint32_t start, uint32_t end);
+        void setUpBVH(Hittable* & node, std::vector<Hittable *> & hittable_list);
         Hittable * bvh_tree_;
         std::vector<Hittable *> hittable_array_;  // a list of the hittable instances
     };

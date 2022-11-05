@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(Cornell_Box)
+project(Playground)
 
 ###############
 # Third Parties
@@ -32,7 +32,7 @@ include_directories(
         ${SPDLOG_INCLUDE}
 )
 
-add_executable(${PROJECT_NAME} cornell_box.cpp ${IMGUI_SRC})
+add_executable(${PROJECT_NAME} playground.cpp ${IMGUI_SRC})
 
 find_library(OPENGL_LIBRARY OpenGL REQUIRED)
 find_library(COCOA_LIBRARY Cocoa REQUIRED)

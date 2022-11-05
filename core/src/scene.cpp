@@ -18,6 +18,12 @@ namespace ALICE_TRACER{
         delete cluster_;
     }
 
+    void Scene::buildBVH() {
+        AliceLog::submitDebugLog("Start Building BVH ...\n");
+        cluster_->buildBVH();
+        AliceLog::submitDebugLog("BVH is all set!\n");
+    }
+
     void Scene::addCamera(Camera &camera) {
         camera_ = &camera;
     }

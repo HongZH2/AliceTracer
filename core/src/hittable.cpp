@@ -44,6 +44,16 @@ namespace ALICE_TRACER{
         return false;
     }
 
+    void AABB::overlapAABB(AABB &bbox1, AABB &bbox2) {
+        b_min_ = max(bbox1.b_min_, bbox2.b_min_);
+        b_max_ = min(bbox1.b_max_, bbox2.b_max_);
+    }
+
+    void AABB::unionAABB(AABB &bbox1, AABB &bbox2) {
+        b_min_ = min(bbox1.b_min_, bbox2.b_min_);
+        b_max_ = max(bbox1.b_max_, bbox2.b_max_);
+    }
+
     bool AABB::isOverlap(AABB &bbox1, AABB &bbox2) {
         AVec3 temp =  min(bbox1.b_max_, bbox2.b_max_) - max(bbox1.b_min_, bbox2.b_min_);
         if( temp.x > MIN_THRESHOLD && temp.y > MIN_THRESHOLD && temp.z > MIN_THRESHOLD){
@@ -52,23 +62,22 @@ namespace ALICE_TRACER{
         return false;
     }
 
-    AABB AABB::overlapAABB(AABB &bbox1, AABB &bbox2) {
-        return {max(bbox1.b_min_, bbox2.b_min_), min(bbox1.b_max_, bbox2.b_max_)};
-    }
-
-    AABB AABB::unionAABB(AABB &bbox1, AABB &bbox2) {
-        return {min(bbox1.b_min_, bbox2.b_min_), max(bbox1.b_max_, bbox2.b_max_)};
-    }
-
     // ------------------------------------------------------------
     // The Hittable Objects/Surfaces/Volume
     // ------------------------------------------------------------
+    Hittable::Hittable(){
+        bound_ = new AABB();
+    }
+
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf): mtl_(mtl), bxdf_(bxdf) {
         bound_ = new AABB();
     }
 
-
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf, Movement * movement): mtl_(mtl), bxdf_(bxdf), movement_(movement) {
+        bound_ = new AABB();
+    }
+
+    Hittable::~Hittable() {
         delete bound_;
     }
 
@@ -116,24 +125,34 @@ namespace ALICE_TRACER{
     }
 
     bool Sphere::CheckHittable(Ray & ray, HitRes & hit_res) {
+        // 1. transform to world coordinate
+        // 2. check intersection
+        // 3. update hit result
+        // 4. transform back to the original coordinate
         AVec3 c_center = center(ray.fm_t_);
         AVec3 oc = ray.start_ - c_center;
         float a = dot(ray.dir_, ray.dir_);
         float b = 2.f * dot(oc, ray.dir_);
         float c = dot(oc, oc) - radius_ * radius_;
         float discriminant = b*b - 4.f * a * c;
-        if (discriminant < MIN_THRESHOLD) {
-            return false;
-        } else {
-            float t = (- b - sqrt(discriminant) ) / (2.f * a);
-            hit_res.is_hit_ = true;
-            hit_res.mtl_ = mtl_;
-            hit_res.bxdf_ = bxdf_;
-            hit_res.point_ = ray.start_ + ray.dir_ * t;
-            hit_res.normal_ = ANormalize(hit_res.point_ - c_center);
-            hit_res.frame_time_ = ray.fm_t_;
-            return true;
+        if (discriminant > MIN_THRESHOLD) {
+            float sqrt_d = sqrt(discriminant)/(2.f * a);
+            float b_part = - b / (2.f * a);
+            float t1 = b_part - sqrt_d;
+            float t2 = b_part + sqrt_d;  // TODO
+
+            if(t1 < ray.t_max_ && t1 > ray.t_min_) {
+                ray.t_max_ = t1;
+                hit_res.is_hit_ = true;
+                hit_res.mtl_ = mtl_;
+                hit_res.bxdf_ = bxdf_;
+                hit_res.point_ = ray.start_ + ray.dir_ * t1;
+                hit_res.setNormal(ANormalize(hit_res.point_ - c_center), ray.dir_);
+                hit_res.frame_time_ = ray.fm_t_;
+                return true;
+            }
         }
+        return false;
     }
 
     // --------------------
@@ -169,13 +188,13 @@ namespace ALICE_TRACER{
         AVec3 b_max = AVec3(-FLT_MAX);
         AVec3 lt = c_cornel + area_.y * v_h_;
         b_min = min(b_min, lt);
-        b_max = min(b_max, lt);
+        b_max = max(b_max, lt);
         AVec3 rb = c_cornel + area_.x * u_w_;
         b_min = min(b_min, rb);
-        b_max = min(b_max, rb);
+        b_max = max(b_max, rb);
         AVec3 rt = lt + area_.x * u_w_;
         b_min = min(b_min, rt);
-        b_max = min(b_max, rt);
+        b_max = max(b_max, rt);
         bound_->b_min_ = b_min - AVec3(AABB_PADDING);
         bound_->b_max_ = b_max + AVec3(AABB_PADDING);
         return bound_;
@@ -197,12 +216,16 @@ namespace ALICE_TRACER{
         float width = ADot(point, u_w_);
         float height = ADot(point, v_h_);
         if(width >= 0.f && width < area_.x && height >= 0.f && height < area_.y){
-            hit_res.is_hit_ = true;
-            hit_res.mtl_ = mtl_;
-            hit_res.bxdf_ = bxdf_;
-            hit_res.point_ = ray.start_ + ray.dir_ * time;
-            hit_res.normal_ = norm_;
-            hit_res.frame_time_ = ray.fm_t_;
+            if(time < ray.t_max_ && time > ray.t_min_) {
+                ray.t_max_ = time;
+                hit_res.is_hit_ = true;
+                hit_res.mtl_ = mtl_;
+                hit_res.bxdf_ = bxdf_;
+                hit_res.point_ = ray.start_ + ray.dir_ * time;
+                hit_res.setNormal(norm_, ray.dir_);
+                hit_res.frame_time_ = ray.fm_t_;
+                return true;
+            }
         }
         return false;
     }
