@@ -4,10 +4,12 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 
 
 ### Showcase
-- Lambert Primitives
-![](showcases/first_demo.png)
+#### Vanilla Monte Carlo for Path Tracing
+- Cornell Box
+![](showcases/cornell_box3.png)
+![](showcases/cornell_box.png)
 - Area Lighting
 ![](showcases/area_lights.png)
-- Cornell Box
-![](showcases/cornell_box.png)
-![](showcases/cornell_box2.png)
+- Lambert Primitives
+![](showcases/first_demo.png)
+

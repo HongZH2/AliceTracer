@@ -59,16 +59,13 @@ namespace ALICE_TRACER{
     // ---------------
     class Sphere: public Hittable{
     public:
+        Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf);
         Sphere(Material *mtl, BxDFBase *bxdf);
         Sphere(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~Sphere() override = default;
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
-    public:
-        void translate(AVec3 offset);
-        void scale(AVec3 scale);
-        void rotate(float angle, AVec3 axis) ;
     private:
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(0.f);
@@ -76,27 +73,74 @@ namespace ALICE_TRACER{
     };
 
     // ---------------
-    // -- Rectangle --
+    // -- RectangleXY --
     // ---------------
     class RectangleXY: public Hittable{
     public:
+        RectangleXY(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf);
         RectangleXY(Material *mtl, BxDFBase *bxdf);
         RectangleXY(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~RectangleXY() override = default;
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
-    public:
-        void translate(AVec3 offset);
-        void scale(AVec3 scale);
-        void rotate(float angle, AVec3 axis);
     private:
-        AVec3 cornel(float frame_time);
-        AVec3 l_b_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
+        AVec3 center(float frame_time);
+        AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
-        AVec3 norm_ = AVec3(0.f, 0.f, 1.f); // normal
-        AVec3 u_w_ = AVec3(1.f, 0.f, 0.f);  // u axis
-        AVec3 v_h_ = AVec3(0.f, 1.f, 0.f); // v axis
+    };
+
+    // ---------------
+    // -- RectangleXZ --
+    // ---------------
+    class RectangleXZ: public Hittable{
+    public:
+        RectangleXZ(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf);
+        RectangleXZ(Material *mtl, BxDFBase *bxdf);
+        RectangleXZ(Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~RectangleXZ() override = default;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
+    private:
+        AVec3 center(float frame_time);
+        AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
+        AVec2 area_ = AVec2(1.f); // area
+    };
+
+    // ---------------
+    // -- RectangleXZ --
+    // ---------------
+    class RectangleYZ: public Hittable{
+    public:
+        RectangleYZ(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf);
+        RectangleYZ(Material *mtl, BxDFBase *bxdf);
+        RectangleYZ(Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~RectangleYZ() override = default;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
+    private:
+        AVec3 center(float frame_time);
+        AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
+        AVec2 area_ = AVec2(1.f); // area
+    };
+
+    // ---------------
+    // -- Cone --
+    // ---------------
+    class Cone: public Hittable{
+    public:
+        Cone(Material *mtl, BxDFBase *bxdf);
+        Cone(Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~Cone() override = default;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
+    public:
+        float h_ = 1.f;
+        float radius_ = 1.f;
+        AVec3 center = AVec3(0.f);
     };
 
 }

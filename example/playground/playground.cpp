@@ -6,7 +6,7 @@
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
 #include "interface/include/render_texture.h"
-
+#include "interface/include/model_loader.h"
 // render core components
 #include "core/include/image.h"
 #include "core/include/camera.h"
@@ -61,22 +61,17 @@ int main(){
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere* sphere1 = new ALICE_TRACER::Sphere{&mtl1, &lambert};
-    sphere1->scale(AVec3(0.5f));
-    sphere1->translate(AVec3(-1.f, -0.3f, 0.f));
-    ALICE_TRACER::Sphere * sphere2 = new ALICE_TRACER::Sphere{&mtl2, &lambert};
-    sphere2->scale(AVec3(0.5f));
-    sphere2->translate(AVec3(-1.5f, -0.3f, 1.f));
-    ALICE_TRACER::Sphere * sphere3 = new ALICE_TRACER::Sphere{&mtl3, &lambert};
-    sphere3->scale(AVec3(0.5f));
-    sphere3->translate(AVec3(1.f, -0.3f, 0.f));
+    ALICE_TRACER::Sphere* sphere1 = new ALICE_TRACER::Sphere{AVec3(-1.f, -0.3f, 0.f), 0.5f, &mtl1, &lambert};
+    ALICE_TRACER::Sphere * sphere2 = new ALICE_TRACER::Sphere{AVec3(-1.5f, -0.3f, 1.f), 0.5f, &mtl2, &lambert};
+    ALICE_TRACER::Sphere * sphere3 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.5f, &mtl3, &lambert};
 
-    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{&mtl2, &lambert};
-    rect1->scale(AVec3(4.f));
-    rect1->rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect1->translate(AVec3(2.f, 0.f, 0.f));
+//    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
+//    ALICE_TRACER::RectangleXZ * rect2 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.f, 0.f), AVec2(1.f), &mtl2, &lambert};
+//    ALICE_TRACER::RectangleYZ * rect3 = new ALICE_TRACER::RectangleYZ{AVec3(-1.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
+    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(-1.f, -1.f, 0.f), AVec3(1.f), &mtl2, &lambert};
 
-    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{&mtl2, &lambert};
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl1, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
 
     // set up the scene
     ALICE_TRACER::Scene scene{5, 5};
@@ -85,9 +80,10 @@ int main(){
         col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
     });
     scene.addCamera(camera);
-    scene.addHittable(sphere1);
-    scene.addHittable(sphere3);
-    scene.addHittable(box1);
+//    scene.addHittable(sphere1);
+//    scene.addHittable(sphere3);
+//    scene.addHittable(box1);
+    scene.addHittable(t1);
     scene.buildBVH();
 
 

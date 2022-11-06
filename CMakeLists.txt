@@ -25,6 +25,9 @@ set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
 # opengl
 find_library(OPENGL_LIBRARY OpenGL REQUIRED)
 
+# assimp
+set(ASSIMP_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/assimp/include)
+
 ###############
 # Alice Tracer
 ###############
@@ -35,7 +38,8 @@ include_directories(
         ${IMGUI_INCLUDE}/backends/
         ${GLFW_INCLUDE}
         ${SPDLOG_INCLUDE}
-        ${OPENGL_INCLUDE_DIR})
+        ${OPENGL_INCLUDE_DIR}
+        ${ASSIMP_INCLUDE})
 
 # Alice Tracer sources
 file(GLOB ALICE_TRACER_SRC

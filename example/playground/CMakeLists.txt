@@ -21,6 +21,9 @@ set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
 # opengl
 find_library(OPENGL_LIBRARY OpenGL REQUIRED)
 
+#assimp
+set(ASSIMP_LIB ${ALICE_TRACER_ROOT}/third_parties/assimp/lib/libassimp.dylib)
+
 ###############
 # Third Parties
 ###############
@@ -46,5 +49,6 @@ target_link_libraries(
         ${IOKIT_LIBRARY}
         ${COREVID_LIBRARY}
         ${GLFW_LIB}
+        ${ASSIMP_LIB}
         Alice_Tracer
 )

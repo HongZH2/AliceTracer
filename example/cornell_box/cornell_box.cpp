@@ -6,6 +6,7 @@
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
 #include "interface/include/render_texture.h"
+#include "interface/include/model_loader.h"
 
 // render core components
 #include "core/include/image.h"
@@ -50,43 +51,26 @@ int main(){
     // material
     ALICE_TRACER::Material mtl1{AVec3(0.2f, 1.f, 0.f)};
     ALICE_TRACER::Material mtl2{AVec3(1.f, 0.2f, 0.f)};
-    ALICE_TRACER::Material mtl3{ AVec3(0.2f)};
+    ALICE_TRACER::Material mtl3{ AVec3(0.3f)};
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
-
-    // movement
-//    ALICE_TRACER::LinearMovement mv1;
-//    mv1.start_ = 0.f;
-//    mv1.end_ = 0.2;
-//    mv1.velocity_ = AVec3(0.f, 0.2f, 0.f);
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
 
     // instances
-    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
-    rect0->scale(AVec3(4.f));
-    rect0->translate(AVec3(0.f, 0.f, -2.f));
-    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
-    rect1->scale(AVec3(4.f));
-    rect1->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect1->translate(AVec3(0.f, 2.f, 0.f));
-    ALICE_TRACER::RectangleXY * rect2 = new ALICE_TRACER::RectangleXY{&mtl3, &lambert};
-    rect2->scale(AVec3(4.f));
-    rect2->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rect2->translate(AVec3(0.f, -2.f, 0.f));
-    ALICE_TRACER::RectangleXY * rect3 = new ALICE_TRACER::RectangleXY{&mtl1, &lambert};
-    rect3->scale(AVec3(4.f));
-    rect3->rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect3->translate(AVec3(2.f, 0.f, 0.f));
-    ALICE_TRACER::RectangleXY * rect4 = new ALICE_TRACER::RectangleXY{&mtl2, &lambert};
-    rect4->scale(AVec3(4.f));
-    rect4->rotate(ARadians(90.f), AVec3(0.f, 1.f, 0.f));
-    rect4->translate(AVec3(-2.f, 0.f, 0.f));
+    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, -2.f), AVec2(4.f), &mtl3, &lambert};
+    ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(2.f, 0.f, 0.f), AVec2(4.f), &mtl1, &lambert};
+    ALICE_TRACER::RectangleYZ * rect2 = new ALICE_TRACER::RectangleYZ{AVec3(-2.f, 0.f, 0.f), AVec2(4.f), &mtl2, &lambert};
+    ALICE_TRACER::RectangleXZ * rect3 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
+    ALICE_TRACER::RectangleXZ * rect4 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
 
-    ALICE_TRACER::RectangleXY * rectL = new ALICE_TRACER::RectangleXY{&mtl4, &lambert};
-    rectL->scale(AVec3(1.f));
-    rectL->rotate(ARadians(90.f), AVec3(1.f, 0.f, 0.f));
-    rectL->translate(AVec3(0.f, 1.98f, 0.f));
+    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(0.7f, -1.5f, 0.f), AVec3(1.f), &mtl3, &lambert};
+    ALICE_TRACER::Box * box2 = new ALICE_TRACER::Box{AVec3(-0.6f, -1.5f, -1.3f), AVec3(1.3f, 4.f, 1.3f), &mtl3, &lambert};
+
+    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(1.f), &mtl4, &lambert};
+
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
 
     // set up the scene
     ALICE_TRACER::Scene scene{5, 5};
@@ -97,6 +81,9 @@ int main(){
     scene.addHittable(rect3);
     scene.addHittable(rect4);
     scene.addHittable(rectL);
+    scene.addHittable(t1);
+//    scene.addHittable(box1);
+//    scene.addHittable(box2);
     scene.buildBVH();
 
     // generate the image pixel by pixel
@@ -109,7 +96,7 @@ int main(){
         threads[n] = std::thread([&](uint32_t cur_n){
             for (uint32_t i = cur_n * num_column; i < (cur_n + 1) * num_column && i < result_image.h(); ++i) {
                 for (uint32_t j = 0; j < result_image.w(); ++j) {
-                    // get the current pixel and re
+                    // get the current pixel and resolution
                     AVec2i pixel{j, i};
                     ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
                     // float to unsigned int 255

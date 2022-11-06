@@ -101,39 +101,43 @@ namespace ALICE_TRACER{
     // -------------------------------
     // Box(6-face cluster list)
     // -------------------------------
-    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf){
+    void Box::generateBox(){
+        // create the box
+        RectangleXY * rect1 = new RectangleXY{center_ + AVec3(0.f, 0.f, scale_.z/2.f), AVec2(scale_.x, scale_.y), mtl_, bxdf_};
+        RectangleXZ * rect2 = new RectangleXZ{center_ + AVec3(0.f, scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z), mtl_, bxdf_};
+        RectangleYZ * rect3 = new RectangleYZ{center_ + AVec3(scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z), mtl_, bxdf_};
+        RectangleXY * rect4 = new RectangleXY{center_ + AVec3(0.f, 0.f, -scale_.z/2.f), AVec2(scale_.x, scale_.y),mtl_, bxdf_};
+        RectangleXZ * rect5 = new RectangleXZ{center_ + AVec3(0.f, -scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z),mtl_, bxdf_};
+        RectangleYZ * rect6 = new RectangleYZ{center_ + AVec3(-scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z),mtl_, bxdf_};
+        hittable_array_.addHittableInst(rect1);
+        hittable_array_.addHittableInst(rect2);
+        hittable_array_.addHittableInst(rect3);
+        hittable_array_.addHittableInst(rect4);
+        hittable_array_.addHittableInst(rect5);
+        hittable_array_.addHittableInst(rect6);
+    };
+
+    Box::Box(ALICE_UTILS::AVec3 center, ALICE_UTILS::AVec3 scale, ALICE_TRACER::Material *mtl,
+             ALICE_TRACER::BxDFBase *bxdf): center_(center), scale_(scale) {
         mtl_ = mtl;
         bxdf_ = bxdf;
-        // create the box
-        std::array<AVec3, 6> offset = {  // offset
-                AVec3(0.f, 0.f, 0.5f),
-                AVec3(0.f, 0.f, -0.5f),
-                AVec3(0.5f, 0.f, 0.0f),
-                AVec3(-0.5f, 0.f, 0.0f),
-                AVec3(0.0f, 0.5f, 0.0f),
-                AVec3(0.0f, -0.5f, 0.0f)
-        };
-        std::array<AVec4, 6> rotate = {  // rotate: axis and angle
-                AVec4(0.f, 0.f, 1.0f, 0.f),
-                AVec4(0.f, 0.f, 1.0f, 0.f),
-                AVec4(0.f, 1.f, 0.0f, 90.f),
-                AVec4(0.f, 1.f, 0.0f, -90.f),
-                AVec4(1.f, 0.f, 0.0f, 90.f),
-                AVec4(1.f, 0.f, 0.0f, -90.f)
-        };
-        for(int32_t i = 0; i < 6; ++i) {
-            RectangleXY * rect = new RectangleXY(mtl, bxdf);
-            float angle = rotate[i].w;
-            rect->rotate(ARadians(angle), AVec3(rotate[i]));
-            rect->translate(offset[i]);
-            hittable_array_.addHittableInst(rect);
-        }
+        generateBox();
         hittable_array_.buildBVH();
     }
 
-    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf, ALICE_TRACER::Movement *movement):
-            Box(mtl, bxdf){
+    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf){
+        mtl_ = mtl;
+        bxdf_ = bxdf;
+        generateBox();
+        hittable_array_.buildBVH();
+    }
+
+    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf, ALICE_TRACER::Movement *movement){
+        mtl_ = mtl;
+        bxdf_ = bxdf;
         movement_ = movement;
+        generateBox();
+        hittable_array_.buildBVH();
     }
 
     AABB *Box::boundLimit(float frame_time) {
@@ -142,5 +146,95 @@ namespace ALICE_TRACER{
 
     bool Box::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
         return hittable_array_.CheckHittable(ray, hit_res);
+    }
+
+    // -------------------------------
+    // Triangle Mesh
+    // -------------------------------
+    Triangle::Triangle(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf):
+            Hittable(mtl, bxdf){
+
+    }
+
+    AABB *Triangle::boundLimit(float frame_time) {
+        if(vertices_) {
+            AVec3 b_min = AVec3(FLT_MAX);
+            AVec3 b_max = AVec3(FLT_MIN);
+            AVec3 v1 = *(vertices_ + idx_[0]);
+            b_min = min(b_min, v1);
+            b_max = max(b_max, v1);
+            AVec3 v2 = *(vertices_ + idx_[1]);
+            b_min = min(b_min, v2);
+            b_max = max(b_max, v2);
+            AVec3 v3 = *(vertices_ + idx_[2]);
+            b_min = min(b_min, v3);
+            b_max = max(b_max, v3);
+            bound_->b_min_ = b_min - AVec3(AABB_PADDING);
+            bound_->b_max_ = b_max + AVec3(AABB_PADDING);
+        }
+        return bound_;
+    }
+
+    bool Triangle::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
+        // Barycentric Method to get the intersection
+        if(!vertices_) return false;
+        AVec3 v1 = *(vertices_ + idx_[0]);
+        AVec3 v2 = *(vertices_ + idx_[1]);
+        AVec3 v3 = *(vertices_ + idx_[2]);
+        AVec3 v21 = v1 - v2;
+        AVec3 v31 = v1 - v3;
+        AVec3 norm = ANormalize(ACross(v21, v31));
+        if(ADot(norm, ray.dir_) < MIN_THRESHOLD && ADot(norm, ray.dir_) > -MIN_THRESHOLD)
+            return false;
+        AVec3 vo1 = v1 - ray.start_;
+        AMat3 A {v21, v31, ray.dir_};
+        AVec3 param = AInverse(A) * vo1;  // TODO
+        if(param.x > 0.f && param.y > 0.f && param.x + param.y < 1.f){
+            if(param.z < ray.t_max_ && param.z > ray.t_min_) {
+                ray.t_max_ = param.z;
+                hit_res.is_hit_ = true;
+                hit_res.mtl_ = mtl_;
+                hit_res.bxdf_ = bxdf_;
+                hit_res.point_ = ray.start_ + ray.dir_ * param.z;
+                hit_res.setNormal(norm, ray.dir_);
+                hit_res.frame_time_ = ray.fm_t_;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    TriangleMesh::TriangleMesh(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf):
+        Hittable(mtl, bxdf){
+
+    }
+
+    TriangleMesh::TriangleMesh(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf,
+                               ALICE_TRACER::Movement *movement):
+            Hittable(mtl, bxdf){
+
+    }
+
+    AABB *TriangleMesh::boundLimit(float frame_time) {
+        return hittable_array_.boundLimit(frame_time);
+    }
+
+    bool TriangleMesh::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
+        return hittable_array_.CheckHittable(ray, hit_res);
+    }
+
+    void TriangleMesh::parseMesh() {
+        for(uint32_t i = 0; i < indices_.size(); ++i){
+            Triangle * triangle = new Triangle(mtl_, bxdf_);
+            if(!vertices_.empty()) triangle->vertices_ = &vertices_[0];
+            if(!normal_.empty()) triangle->normal_ = &normal_[0];
+            if(!tex_coords_.empty()) triangle->tex_coord_ = &tex_coords_[0];
+            if(!tangent_.empty()) triangle->tangent_ = &tangent_[0];
+
+            triangle->idx_ = indices_[i];
+
+            hittable_array_.addHittableInst(triangle);
+        }
+        hittable_array_.buildBVH();
     }
 }

@@ -88,26 +88,15 @@ namespace ALICE_TRACER{
     // --------------------
     // -- Rectangle
     // --------------------
-
+    Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf)
+            : Hittable(mtl, bxdf), center_(center), radius_(radius){
+    }
     Sphere::Sphere(Material *mtl, BxDFBase *bxdf)
             : Hittable(mtl, bxdf){
     }
 
     Sphere::Sphere(Material *mtl, BxDFBase *bxdf, Movement * movement)
             : Hittable(mtl, bxdf, movement){
-    }
-
-    void Sphere::translate(AVec3 offset) {
-        center_ += offset;
-    }
-
-    void Sphere::scale(AVec3 scale) {
-        radius_ = (scale.x + scale.y + scale.z)/3.f;
-    }
-
-    void Sphere::rotate(float angle, AVec3 axis) {
-        // TODO: Rotate Texture
-        return;
     }
 
     AVec3 Sphere::center(float frame_time) {
@@ -158,6 +147,11 @@ namespace ALICE_TRACER{
     // --------------------
     // -- Rectangle
     // --------------------
+    RectangleXY::RectangleXY(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf), center_(center), area_(scale){
+
+    }
+
     RectangleXY::RectangleXY(Material *mtl, BxDFBase *bxdf):
             Hittable(mtl, bxdf){
     }
@@ -166,63 +160,150 @@ namespace ALICE_TRACER{
             Hittable(mtl, bxdf, movement){
     }
 
-    void RectangleXY::translate(AVec3 offset) {
-        l_b_ += offset;
-    }
-
-    void RectangleXY::rotate(float angle, AVec3 axis) {
-        l_b_ = ARotate(l_b_, angle, axis);
-        u_w_ = ARotate(u_w_, angle, axis);
-        v_h_ = ARotate(v_h_, angle, axis);
-        norm_ = ARotate(norm_, angle, axis);
-    }
-
-    void RectangleXY::scale(ALICE_UTILS::AVec3 scale) {
-        l_b_ *= abs(scale);
-        area_ *= abs(AVec2(scale));
-    }
-
     AABB * RectangleXY::boundLimit(float frame_time) {
-        AVec3 c_cornel = cornel(frame_time);
-        AVec3 b_min = AVec3(FLT_MAX);
-        AVec3 b_max = AVec3(-FLT_MAX);
-        AVec3 lt = c_cornel + area_.y * v_h_;
-        b_min = min(b_min, lt);
-        b_max = max(b_max, lt);
-        AVec3 rb = c_cornel + area_.x * u_w_;
-        b_min = min(b_min, rb);
-        b_max = max(b_max, rb);
-        AVec3 rt = lt + area_.x * u_w_;
-        b_min = min(b_min, rt);
-        b_max = max(b_max, rt);
-        bound_->b_min_ = b_min - AVec3(AABB_PADDING);
-        bound_->b_max_ = b_max + AVec3(AABB_PADDING);
+        AVec3 c_center = center(frame_time);
+        bound_->b_min_ = c_center - AVec3(area_/2.f, 0.f) - AVec3(AABB_PADDING);
+        bound_->b_max_ = c_center + AVec3(area_/2.f, 0.f) + AVec3(AABB_PADDING);
         return bound_;
     }
 
-    AVec3 RectangleXY::cornel(float frame_time){
+    AVec3 RectangleXY::center(float frame_time){
         if(movement_){
-            return movement_->movementFunc(l_b_, frame_time);
+            return movement_->movementFunc(center_, frame_time);
         }
-        return l_b_;
+        return center_;
     }
 
-    bool RectangleXY::CheckHittable(Ray &ray, HitRes & hit_res) {  // TODO: fix the precision issue
-        float ldotn = ADot(ray.dir_, norm_);
+    bool RectangleXY::CheckHittable(Ray &ray, HitRes & hit_res) {
+        AVec3 normal = AVec3(0.f, 0.f, 1.f);
+        AVec3 c_center = center(ray.fm_t_);
+        AVec2 lb = AVec2(c_center) - area_/2.f;
+        AVec2 rt = AVec2(c_center) + area_/2.f;
+
+        float ldotn = ADot(ray.dir_, normal);
         if(abs(ldotn) < MIN_THRESHOLD)
             return false;
-        float time = ADot(cornel(ray.fm_t_) - ray.start_, norm_)/ ldotn;
-        AVec3 point = ray.start_ + time * ray.dir_ - cornel(ray.fm_t_);
-        float width = ADot(point, u_w_);
-        float height = ADot(point, v_h_);
-        if(width >= 0.f && width < area_.x && height >= 0.f && height < area_.y){
+        float time = ADot(c_center - ray.start_, normal)/ ldotn;
+        AVec3 point = ray.start_ + time * ray.dir_;
+        if(point.x > lb[0] && point.x < rt[0] && point.y > lb[1] && point.y < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
                 hit_res.point_ = ray.start_ + ray.dir_ * time;
-                hit_res.setNormal(norm_, ray.dir_);
+                hit_res.setNormal(normal, ray.dir_);
+                hit_res.frame_time_ = ray.fm_t_;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ---------------
+    // -- RectangleXZ --
+    // ---------------
+    RectangleXZ::RectangleXZ(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf), center_(center), area_(scale){
+
+    }
+
+    RectangleXZ::RectangleXZ(Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf){
+    }
+
+    RectangleXZ::RectangleXZ(Material *mtl, BxDFBase *bxdf, Movement * movement):
+            Hittable(mtl, bxdf, movement){
+    }
+
+    AABB * RectangleXZ::boundLimit(float frame_time) {
+        AVec3 c_center = center(frame_time);
+        bound_->b_min_ = c_center - AVec3(area_[0]/2.f, 0.f, area_[1]/2.f) - AVec3(AABB_PADDING);
+        bound_->b_max_ = c_center + AVec3(area_[0]/2.f, 0.f, area_[1]/2.f) + AVec3(AABB_PADDING);
+        return bound_;
+    }
+
+    AVec3 RectangleXZ::center(float frame_time){
+        if(movement_){
+            return movement_->movementFunc(center_, frame_time);
+        }
+        return center_;
+    }
+
+    bool RectangleXZ::CheckHittable(Ray &ray, HitRes & hit_res) {
+        AVec3 normal = AVec3(0.f, 1.f, 0.f);
+        AVec3 c_center = center(ray.fm_t_);
+        AVec2 lb = AVec2(c_center.x, c_center.z) - area_/2.f;
+        AVec2 rt = AVec2(c_center.x, c_center.z) + area_/2.f;
+
+        float ldotn = ADot(ray.dir_, normal);
+        if(abs(ldotn) < MIN_THRESHOLD)
+            return false;
+        float time = ADot(c_center - ray.start_, normal)/ ldotn;
+        AVec3 point = ray.start_ + time * ray.dir_;
+        if(point.x > lb[0] && point.x < rt[0] && point.z > lb[1] && point.z < rt[1]){
+            if(time < ray.t_max_ && time > ray.t_min_) {
+                ray.t_max_ = time;
+                hit_res.is_hit_ = true;
+                hit_res.mtl_ = mtl_;
+                hit_res.bxdf_ = bxdf_;
+                hit_res.point_ = ray.start_ + ray.dir_ * time;
+                hit_res.setNormal(normal, ray.dir_);
+                hit_res.frame_time_ = ray.fm_t_;
+                return true;
+            }
+        }
+        return false;
+    }
+    // ---------------
+    // -- RectangleYZ --
+    // ---------------
+    RectangleYZ::RectangleYZ(AVec3 center, AVec2 scale, Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf), center_(center), area_(scale){
+
+    }
+
+    RectangleYZ::RectangleYZ(Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf){
+    }
+
+    RectangleYZ::RectangleYZ(Material *mtl, BxDFBase *bxdf, Movement * movement):
+            Hittable(mtl, bxdf, movement){
+    }
+
+    AABB * RectangleYZ::boundLimit(float frame_time) {
+        AVec3 c_center = center(frame_time);
+        bound_->b_min_ = c_center - AVec3(0.f, area_[0]/2.f, area_[1]/2.f) - AVec3(AABB_PADDING);
+        bound_->b_max_ = c_center + AVec3(0.f, area_[0]/2.f, area_[1]/2.f) + AVec3(AABB_PADDING);
+        return bound_;
+    }
+
+    AVec3 RectangleYZ::center(float frame_time){
+        if(movement_){
+            return movement_->movementFunc(center_, frame_time);
+        }
+        return center_;
+    }
+
+    bool RectangleYZ::CheckHittable(Ray &ray, HitRes & hit_res) {
+        AVec3 normal = AVec3(1.f, 0.f, 0.f);
+        AVec3 c_center = center(ray.fm_t_);
+        AVec2 lb = AVec2(c_center.y, c_center.z) - area_/2.f;
+        AVec2 rt = AVec2(c_center.y, c_center.z) + area_/2.f;
+
+        float ldotn = ADot(ray.dir_, normal);
+        if(abs(ldotn) < MIN_THRESHOLD)
+            return false;
+        float time = ADot(c_center - ray.start_, normal)/ ldotn;
+        AVec3 point = ray.start_ + time * ray.dir_;
+        if(point.y > lb[0] && point.y < rt[0] && point.z > lb[1] && point.z < rt[1]){
+            if(time < ray.t_max_ && time > ray.t_min_) {
+                ray.t_max_ = time;
+                hit_res.is_hit_ = true;
+                hit_res.mtl_ = mtl_;
+                hit_res.bxdf_ = bxdf_;
+                hit_res.point_ = ray.start_ + ray.dir_ * time;
+                hit_res.setNormal(normal, ray.dir_);
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;
             }
