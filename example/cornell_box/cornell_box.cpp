@@ -53,7 +53,7 @@ int main(){
     ALICE_TRACER::Material mtl2{AVec3(1.f, 0.2f, 0.f)};
     ALICE_TRACER::Material mtl3{ AVec3(0.3f)};
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
-
+    ALICE_TRACER::EmitMaterial mtl5{AVec3(1.f), AVec3(1.f)};
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
 
@@ -69,7 +69,7 @@ int main(){
 
     ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
 
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl5, &lambert};
     ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
 
     // set up the scene
@@ -88,6 +88,7 @@ int main(){
 
     // generate the image pixel by pixel
     // submit multiple
+
     uint32_t num_pack = 8;
     uint32_t num_column = ceil(result_image.h()/num_pack);
     std::vector<std::thread> threads{num_pack};
