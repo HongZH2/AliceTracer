@@ -67,7 +67,7 @@ int main(){
     ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(0.7f, -1.5f, 0.f), AVec3(1.f), &mtl3, &lambert};
     ALICE_TRACER::Box * box2 = new ALICE_TRACER::Box{AVec3(-0.6f, -1.5f, -1.3f), AVec3(1.3f, 4.f, 1.3f), &mtl3, &lambert};
 
-    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(1.f), &mtl4, &lambert};
+    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
 
     ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
     ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
