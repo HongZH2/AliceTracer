@@ -188,14 +188,28 @@ namespace ALICE_TRACER{
             return false;
         AVec3 vo1 = v1 - ray.start_;
         AMat3 A {v21, v31, ray.dir_};
-        AVec3 param = AInverse(A) * vo1;  // TODO
-        if(param.x > 0.f && param.y > 0.f && param.x + param.y < 1.f){
-            if(param.z < ray.t_max_ && param.z > ray.t_min_) {
-                ray.t_max_ = param.z;
+        float M = A[0][0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2])
+                    + A[0][1] * (A[2][0] * A[1][2] - A[1][0] * A[2][2])
+                    + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+        float beta = vo1[0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2])
+                     + vo1[1] * (A[2][0] * A[1][2] - A[1][0] * A[2][2])
+                     + vo1[2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+        beta /= M;
+        float lambda = A[2][2] * (A[0][0] * vo1[1] - vo1[0] * A[0][1])
+                        + A[2][1] * (vo1[0] * A[0][2] - A[0][0] * vo1[2])
+                        + A[2][0] * (A[0][1] * vo1[2] - vo1[1] * A[0][2]);
+        lambda /= M;
+        float time = A[1][2] * (A[0][0] * vo1[1] - vo1[0] * A[0][1])
+                    + A[1][1] * (vo1[0] * A[0][2] - vo1[2]* A[0][0])
+                    + A[1][0] * (A[0][1] * vo1[2] - vo1[1] * A[0][2]);
+        time /= -M;
+        if(beta > 0.f && lambda > 0.f && beta + lambda < 1.f){
+            if(time < ray.t_max_ && time > ray.t_min_) {
+                ray.t_max_ = time;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
-                hit_res.point_ = ray.start_ + ray.dir_ * param.z;
+                hit_res.point_ = ray.start_ + ray.dir_ * time;
                 hit_res.setNormal(norm, ray.dir_);
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;

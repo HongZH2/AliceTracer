@@ -70,11 +70,11 @@ int main(){
 //    ALICE_TRACER::RectangleYZ * rect3 = new ALICE_TRACER::RectangleYZ{AVec3(-1.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
     ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(-1.f, -1.f, 0.f), AVec3(1.f), &mtl2, &lambert};
 
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(1.f), &mtl1, &lambert};
-    ALICE_TRACER::ModelLoader::loadModel("../assets/cornell_box/cornell_box.obj", t1);
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(0.02f), &mtl1, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../assets/lowPolyMan.obj", t1);
 
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
+    ALICE_TRACER::Scene scene{50, 5};
     scene.setBgFunc([](AVec3 & dir, AVec3 & col){
         float t = 0.5f * (dir.y + 1.0f);
         col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
