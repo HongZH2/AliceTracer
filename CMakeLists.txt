@@ -52,4 +52,4 @@ add_library(${PROJECT_NAME}
         ${ALICE_TRACER_SRC}
         )
 
-add_subdirectory(example)
+add_subdirectory(examples)

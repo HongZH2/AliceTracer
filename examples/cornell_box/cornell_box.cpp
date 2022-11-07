@@ -6,6 +6,7 @@
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
 #include "interface/include/render_texture.h"
+#include "interface/include/model_loader.h"
 
 // render core components
 #include "core/include/image.h"
@@ -48,31 +49,47 @@ int main(){
 
     // set up the scene
     // material
-    ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
-    ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
-    ALICE_TRACER::Material mtl3{ AVec3(0.35f)};
-    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
+    ALICE_TRACER::Material mtl1{AVec3(0.1f, 0.5f, 0.f)};
+    ALICE_TRACER::Material mtl2{AVec3(0.5f, 0.1f, 0.f)};
+    ALICE_TRACER::Material mtl3{ AVec3(0.3f)};
+    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(5.f)};
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.3f, &mtl1, &lambert};
-    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(2.f, -0.3f, 0.f), AVec3(0.6f), &mtl2, &lambert};
-    ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(0.f, -0.6f, 0.f), AVec2(8.f, 6.f), &mtl3, &lambert};
+
+    // instances
+    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, -2.f), AVec2(4.f), &mtl3, &lambert};
+    ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(2.f, 0.f, 0.f), AVec2(4.f), &mtl1, &lambert};
+    ALICE_TRACER::RectangleYZ * rect2 = new ALICE_TRACER::RectangleYZ{AVec3(-2.f, 0.f, 0.f), AVec2(4.f), &mtl2, &lambert};
+    ALICE_TRACER::RectangleXZ * rect3 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
+    ALICE_TRACER::RectangleXZ * rect4 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
+
+    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(0.7f, -1.5f, 0.f), AVec3(1.f), &mtl3, &lambert};
+    ALICE_TRACER::Box * box2 = new ALICE_TRACER::Box{AVec3(-0.6f, -1.5f, -1.3f), AVec3(1.3f, 4.f, 1.3f), &mtl3, &lambert};
+
+    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
+
+//    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(1.3f), &mtl3, &lambert};
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../assets/monkey/monkey.obj", t1);
 
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
-    scene.setBgFunc([](AVec3 & dir, AVec3 & col){
-        float t = 0.5f * (dir.y + 1.0f);
-        col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
-    });
+    ALICE_TRACER::Scene scene{50, 5};
     scene.addCamera(camera);
-    scene.addHittable(sphere1);
-    scene.addHittable(rect1);
     scene.addHittable(rect0);
+    scene.addHittable(rect1);
+    scene.addHittable(rect2);
+    scene.addHittable(rect3);
+    scene.addHittable(rect4);
+    scene.addHittable(rectL);
+    scene.addHittable(t1);
+//    scene.addHittable(box1);
+//    scene.addHittable(box2);
     scene.buildBVH();
 
     // generate the image pixel by pixel
     // submit multiple
+
     uint32_t num_pack = 8;
     uint32_t num_column = ceil(result_image.h()/num_pack);
     std::vector<std::thread> threads{num_pack};
@@ -81,7 +98,7 @@ int main(){
         threads[n] = std::thread([&](uint32_t cur_n){
             for (uint32_t i = cur_n * num_column; i < (cur_n + 1) * num_column && i < result_image.h(); ++i) {
                 for (uint32_t j = 0; j < result_image.w(); ++j) {
-                    // get the current pixel and re
+                    // get the current pixel and resolution
                     AVec2i pixel{j, i};
                     ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
                     // float to unsigned int 255
@@ -99,6 +116,9 @@ int main(){
         t.join();
     }
 
+    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
+
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
     // render to the screen
@@ -112,8 +132,6 @@ int main(){
     }
     widgets.destroyImGui();
     window.releaseWindow();
-
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
 
     return 0;
 }

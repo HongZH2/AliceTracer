@@ -6,7 +6,7 @@
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
 #include "interface/include/render_texture.h"
-#include "interface/include/model_loader.h"
+
 // render core components
 #include "core/include/image.h"
 #include "core/include/camera.h"
@@ -48,30 +48,16 @@ int main(){
 
     // set up the scene
     // material
-    ALICE_TRACER::Material mtl1{AVec3(0.9f, 1.f, 0.f)};
-    ALICE_TRACER::Material mtl2{AVec3(1.f, 0.f, 0.f)};
+    ALICE_TRACER::Material mtl1{AVec3(0.3f, 0.4f, 0.f)};
+    ALICE_TRACER::Material mtl2{AVec3(0.4f, 0.f, 0.f)};
     ALICE_TRACER::Material mtl3{ AVec3(0.35f)};
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
 
-    // movement
-//    ALICE_TRACER::LinearMovement mv1;
-//    mv1.start_ = 0.f;
-//    mv1.end_ = 0.2;
-//    mv1.velocity_ = AVec3(0.f, 0.2f, 0.f);
-
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere* sphere1 = new ALICE_TRACER::Sphere{AVec3(-1.f, -0.3f, 0.f), 0.5f, &mtl1, &lambert};
-    ALICE_TRACER::Sphere * sphere2 = new ALICE_TRACER::Sphere{AVec3(-1.5f, -0.3f, 1.f), 0.5f, &mtl2, &lambert};
-    ALICE_TRACER::Sphere * sphere3 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.5f, &mtl3, &lambert};
-
-//    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-//    ALICE_TRACER::RectangleXZ * rect2 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-//    ALICE_TRACER::RectangleYZ * rect3 = new ALICE_TRACER::RectangleYZ{AVec3(-1.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(-1.f, -1.f, 0.f), AVec3(1.f), &mtl2, &lambert};
-
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl1, &lambert};
-    ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
+    ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.3f, &mtl1, &lambert};
+    ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(2.f, -0.3f, 0.f), AVec3(0.6f), &mtl2, &lambert};
+    ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(0.f, -0.6f, 0.f), AVec2(8.f, 6.f), &mtl3, &lambert};
 
     // set up the scene
     ALICE_TRACER::Scene scene{5, 5};
@@ -80,12 +66,10 @@ int main(){
         col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
     });
     scene.addCamera(camera);
-//    scene.addHittable(sphere1);
-//    scene.addHittable(sphere3);
-//    scene.addHittable(box1);
-    scene.addHittable(t1);
+    scene.addHittable(sphere1);
+    scene.addHittable(rect1);
+    scene.addHittable(rect0);
     scene.buildBVH();
-
 
     // generate the image pixel by pixel
     // submit multiple
