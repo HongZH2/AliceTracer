@@ -34,7 +34,7 @@ namespace ALICE_TRACER{
                     vertex.x = model->mMeshes[i]->mVertices[j].x;
                     vertex.y = model->mMeshes[i]->mVertices[j].y;
                     vertex.z = model->mMeshes[i]->mVertices[j].z;
-                    mesh->vertices_.push_back(vertex);
+                    mesh->vertices_.push_back(vertex * mesh->scale() + mesh->offset());
                 }
 
                 // indices

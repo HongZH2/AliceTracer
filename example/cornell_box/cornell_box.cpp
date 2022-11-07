@@ -69,11 +69,11 @@ int main(){
 
     ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
 
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl5, &lambert};
-    ALICE_TRACER::ModelLoader::loadModel("../asset/monkey/monkey.obj", t1);
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(1.3f), &mtl3, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../asset/venus_lowpoly.obj", t1);
 
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
+    ALICE_TRACER::Scene scene{50, 5};
     scene.addCamera(camera);
     scene.addHittable(rect0);
     scene.addHittable(rect1);
@@ -115,6 +115,9 @@ int main(){
         t.join();
     }
 
+    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
+
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
     // render to the screen
@@ -128,8 +131,6 @@ int main(){
     }
     widgets.destroyImGui();
     window.releaseWindow();
-
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
 
     return 0;
 }

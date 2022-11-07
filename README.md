@@ -6,6 +6,7 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 ### Showcase
 #### Vanilla Monte Carlo for Path Tracing
 - Cornell Box
+![](showcases/venus2.png)
 ![](showcases/cornell_box3.png)
 ![](showcases/cornell_box.png)
 - Area Lighting

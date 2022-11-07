@@ -86,19 +86,24 @@ namespace ALICE_TRACER{
 
     class TriangleMesh : public Hittable{
     public:
+        TriangleMesh(AVec3 center, AVec3 scale, Material *mtl, BxDFBase *bxdf);
         TriangleMesh(Material *mtl, BxDFBase *bxdf);
         TriangleMesh(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~TriangleMesh() override = default;
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
-
         void parseMesh();
+        inline AVec3 offset(){return center_;}
+        inline AVec3 scale(){return scale_;}
     public:
         std::vector<AVec3> vertices_;
         std::vector<AVec3i> indices_;
         std::vector<AVec3> tangent_;
         std::vector<AVec3> normal_;
         std::vector<AVec3> tex_coords_;
+    protected:
+        AVec3 center_ = AVec3(0.f);
+        AVec3 scale_ = AVec3(1.f);
         ClusterList hittable_array_;
     };
 }
