@@ -90,6 +90,12 @@ namespace ALICE_TRACER{
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
+    void TextureBuffer::updateTexture(ALICE_TRACER::ImageBase *img) {
+        glBindTexture(GL_TEXTURE_2D, tid_);
+        auto * temp = (ImageRGBA *) img;
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->w(), img->h(), GL_RGB, GL_UNSIGNED_BYTE, temp->getDataPtr());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     void TextureBuffer::loadGPUTexture(ALICE_TRACER::ImageBase *img) {
         width_ = img->w();

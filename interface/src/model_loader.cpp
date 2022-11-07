@@ -17,7 +17,8 @@ namespace ALICE_TRACER{
                                                         aiProcess_OptimizeMeshes |
                                                         aiProcess_OptimizeGraph|
                                                         aiProcess_FixInfacingNormals|
-                                                        aiProcess_GenNormals);
+                                                        aiProcess_GenNormals|
+                                                        aiProcess_OptimizeMeshes);
         if (!model || !mesh) {
             AliceLog::submitInfoLog("Fail to load the model\n");
             return;

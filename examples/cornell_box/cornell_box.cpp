@@ -13,6 +13,8 @@
 #include "core/include/camera.h"
 #include "core/include/scene.h"
 
+#include "utils/include/alice_threads.h"
+
 // stb image
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "third_parties/stb_image/stb_write.h"
@@ -74,7 +76,7 @@ int main(){
     ALICE_TRACER::ModelLoader::loadModel("../assets/monkey/monkey.obj", t1);
 
     // set up the scene
-    ALICE_TRACER::Scene scene{50, 5};
+    ALICE_TRACER::Scene scene{5, 5};
     scene.addCamera(camera);
     scene.addHittable(rect0);
     scene.addHittable(rect1);
@@ -87,51 +89,52 @@ int main(){
 //    scene.addHittable(box2);
     scene.buildBVH();
 
-    // generate the image pixel by pixel
-    // submit multiple
-
-    uint32_t num_pack = 8;
-    uint32_t num_column = ceil(result_image.h()/num_pack);
-    std::vector<std::thread> threads{num_pack};
-    for(uint32_t n = 0; n < num_pack; ++n){
-        // submit the task
-        threads[n] = std::thread([&](uint32_t cur_n){
-            for (uint32_t i = cur_n * num_column; i < (cur_n + 1) * num_column && i < result_image.h(); ++i) {
-                for (uint32_t j = 0; j < result_image.w(); ++j) {
-                    // get the current pixel and resolution
-                    AVec2i pixel{j, i};
-                    ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
-                    // float to unsigned int 255
-                    AVec3i color = pixel_col.ToUInt();
-                    // assign the color to RGB channel
-                    for (uint32_t c = 0; c < result_image.c(); ++c) {
-                        result_image(i, j, c) = color[c];
-                    }
-                }
-            }
-        }, n);
-    }
-
-    for(auto & t: threads){
-        t.join();
-    }
-
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
-    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
-
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
+    texture.loadGPUTexture(&result_image);
+
+    // generate the image pixel by pixel
+    uint32_t num_pack = 16;
+    uint32_t num_col = ceil(result_image.h()/num_pack);
+    uint32_t num_row = ceil(result_image.w()/num_pack);
+    for(uint32_t n = 0; n < num_pack; ++n){
+        // submit the task
+        for(uint32_t m = 0; m < num_pack; ++m){
+            ThreadPool::submitTask([&](uint32_t cur_n, uint32_t cur_m){
+                for (uint32_t i = cur_n * num_col; i < (cur_n + 1) * num_col && i < result_image.h(); ++i) {
+                    for (uint32_t j = cur_m * num_row; j < (cur_m + 1) * num_row && j < result_image.w(); ++j) {
+                        // get the current pixel and resolution
+                        AVec2i pixel{j, i};
+                        ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
+                        // float to unsigned int 255
+                        AVec3i color = pixel_col.ToUInt();
+                        // assign the color to RGB channel
+                        for (uint32_t c = 0; c < result_image.c(); ++c) {
+                            result_image(i, j, c) = color[c];
+                        }
+                    }
+                }
+            }, n, m);
+        }
+    }
+
     // render to the screen
     while(window.updateWindow()){
-        if(texture.isUpdate()){
-            texture.loadGPUTexture(&result_image);
-        }
+        // render to the screen
+        texture.updateTexture(&result_image);
         texture.drawTexture();
         widgets.updateImGui();
         window.swapBuffer();
     }
     widgets.destroyImGui();
     window.releaseWindow();
+
+//    for(auto & t: threads){
+//        t.join();
+//    }
+
+    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
 
     return 0;
 }

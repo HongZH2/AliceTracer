@@ -229,15 +229,13 @@ namespace ALICE_TRACER{
     }
 
     void TriangleMesh::parseMesh() {
-        for(uint32_t i = 0; i < indices_.size(); ++i){
-            Triangle * triangle = new Triangle(mtl_, bxdf_);
+        for(auto & index : indices_){
+            auto * triangle = new Triangle(mtl_, bxdf_);
             if(!vertices_.empty()) triangle->vertices_ = &vertices_[0];
             if(!normal_.empty()) triangle->normal_ = &normal_[0];
             if(!tex_coords_.empty()) triangle->tex_coord_ = &tex_coords_[0];
             if(!tangent_.empty()) triangle->tangent_ = &tangent_[0];
-
-            triangle->idx_ = indices_[i];
-
+            triangle->idx_ = index;
             hittable_array_.addHittableInst(triangle);
         }
         hittable_array_.buildBVH();

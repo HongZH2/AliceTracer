@@ -51,7 +51,7 @@ int main(){
     ALICE_TRACER::Material mtl1{AVec3(0.3f, 0.4f, 0.f)};
     ALICE_TRACER::Material mtl2{AVec3(0.4f, 0.f, 0.f)};
     ALICE_TRACER::Material mtl3{ AVec3(0.35f)};
-    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
+    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(5.f)};
 
     // bxdf
     ALICE_TRACER::LambertBRDF lambert;
@@ -70,6 +70,11 @@ int main(){
     scene.addHittable(rect1);
     scene.addHittable(rect0);
     scene.buildBVH();
+
+
+    // create a texture
+    ALICE_TRACER::TextureBuffer texture;
+    texture.loadGPUTexture(&result_image);
 
     // generate the image pixel by pixel
     // submit multiple
@@ -99,21 +104,18 @@ int main(){
         t.join();
     }
 
-    // create a texture
-    ALICE_TRACER::TextureBuffer texture;
-    // render to the screen
+    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
+    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
+
     while(window.updateWindow()){
-        if(texture.isUpdate()){
-            texture.loadGPUTexture(&result_image);
-        }
+        // render to the screen
+        texture.updateTexture(&result_image);
         texture.drawTexture();
         widgets.updateImGui();
         window.swapBuffer();
     }
     widgets.destroyImGui();
     window.releaseWindow();
-
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
 
     return 0;
 }

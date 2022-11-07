@@ -18,6 +18,7 @@ namespace ALICE_TRACER{
         ~TextureBuffer() = default;
 
         void loadGPUTexture(ImageBase * img);
+        void updateTexture(ImageBase * img);
 
         inline bool isUpdate() const {return is_update_;}
         inline uint32_t texID() const {return tid_;}
