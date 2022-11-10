@@ -12,7 +12,7 @@
 #include "core/include/image.h"
 #include "core/include/camera.h"
 #include "core/include/scene.h"
-
+#include "core/include/integrator.h"
 #include "utils/include/alice_threads.h"
 
 // stb image
@@ -76,7 +76,7 @@ int main(){
     ALICE_TRACER::ModelLoader::loadModel("../assets/monkey/monkey.obj", t1);
 
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
+    ALICE_TRACER::Scene scene;
     scene.addCamera(camera);
     scene.addHittable(rect0);
     scene.addHittable(rect1);
@@ -88,6 +88,9 @@ int main(){
 //    scene.addHittable(box1);
 //    scene.addHittable(box2);
     scene.buildBVH();
+
+    // integrator
+    ALICE_TRACER::UniformIntegrator integrator{5, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
@@ -105,7 +108,7 @@ int main(){
                     for (uint32_t j = cur_m * num_row; j < (cur_m + 1) * num_row && j < result_image.w(); ++j) {
                         // get the current pixel and resolution
                         AVec2i pixel{j, i};
-                        ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
+                        ALICE_TRACER::Color pixel_col = integrator.render(pixel, resolution, &scene);
                         // float to unsigned int 255
                         AVec3i color = pixel_col.ToUInt();
                         // assign the color to RGB channel

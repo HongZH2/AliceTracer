@@ -16,24 +16,16 @@ namespace ALICE_TRACER{
      */
     class Scene{
     public:
-        Scene(uint32_t num_sample_per_pixel, uint32_t max_num_iteration);
+        Scene();
         ~Scene();
 
-        Color computePixel(AVec2i pixel, AVec2i resolution);  // start the Monte Carlo
         void addCamera(Camera & camera);
         void addHittable(Hittable * hittable);
         void removeHittable(Hittable * hittable);
         void buildBVH();
 
-        inline void setNumOfSamples(uint32_t num_of_samples){ num_of_samples_ = num_of_samples;}
         inline void setBgFunc(std::function<void(AVec3 &, AVec3 &)> func){ background_func_ = func;}  // set the background
-    private:
-        void traceRay(Ray & ray, uint32_t iteration);        // to trace any ray
-        void doShading(HitRes & hit_res, Ray & in_ray, Ray & out_ray);        // do the shading math
-        Ray generateSampleRay(HitRes & hit_res);
-
-        uint32_t num_of_samples_ = 1;  // the number of the samples per pixel
-        uint32_t max_num_iteration_ = 1; // the maximum number of the tracing recursion
+    public:
         Camera * camera_;
         ClusterList * cluster_;
         std::function<void(AVec3 &, AVec3 &)> background_func_ = nullptr;

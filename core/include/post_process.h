@@ -6,6 +6,7 @@
 #define ALICE_TRACER_POST_PROCESS_H
 
 #include "utils/include/alice_math.h"
+#include "color.h"
 
 namespace ALICE_TRACER{
     // -----------------------------

@@ -33,6 +33,10 @@ namespace ALICE_TRACER{
          * uniform sample/importance sample by BxDF
          */
         virtual AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) = 0;
+        /*
+         * given a sampling direction, return the pdf
+         */
+        virtual float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) = 0;
     };
 
     /*
@@ -45,6 +49,7 @@ namespace ALICE_TRACER{
 
         AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
         AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) override;
+        float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) override;
     };
 
 //    /*
