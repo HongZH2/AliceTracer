@@ -6,11 +6,38 @@
 #define ALICE_TRACER_INTEGRATOR_H
 
 #include "scene.h"
+#include "random_variable.h"
 
 namespace ALICE_TRACER{
-    /*
-     * Integrator for evaluating the Render Equation
-     */
+
+    class RussianRoulette{
+    public:
+        RussianRoulette() = default;
+        ~RussianRoulette() = default;
+
+        static RussianRoulette & getInstace(){
+
+        }
+
+        static bool evaluate(Color & col){
+            float random_val = ALICE_TRACER::random_val<float>();
+            if(random_val < end_){
+
+            }
+        }
+        float end_ = 0.5f; // the probability to end the path tracing
+    };
+
+    // ---------------
+    // -- sampler: to sample lights and textures and so on
+    // ---------------
+    class Sampler{
+
+    };
+
+    // ---------------
+    // Integrator for evaluating the Render Equation
+    // ---------------
     class Integrator{
     public:
         Integrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration);

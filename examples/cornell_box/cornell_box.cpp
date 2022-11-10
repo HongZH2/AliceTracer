@@ -20,7 +20,6 @@
 #include "third_parties/stb_image/stb_write.h"
 
 int main(){
-
     // set the log level
     ALICE_TRACER::AliceLog::setLogLevel(ALICE_TRACER::AliceLogType::debug);
 
@@ -66,13 +65,10 @@ int main(){
     ALICE_TRACER::RectangleXZ * rect3 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
     ALICE_TRACER::RectangleXZ * rect4 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -2.f, 0.f), AVec2(4.f), &mtl3, &lambert};
 
-    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(0.7f, -1.5f, 0.f), AVec3(1.f), &mtl3, &lambert};
-    ALICE_TRACER::Box * box2 = new ALICE_TRACER::Box{AVec3(-0.6f, -1.5f, -1.3f), AVec3(1.3f, 4.f, 1.3f), &mtl3, &lambert};
-
     ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
 
-//    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(1.3f), &mtl3, &lambert};
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, 0.f, -1.f), AVec3(1.0f), -30.f, AVec3(1.f, 0.f ,0.f), &mtl3, &lambert};
+//    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
     ALICE_TRACER::ModelLoader::loadModel("../assets/monkey/monkey.obj", t1);
 
     // set up the scene
@@ -85,12 +81,10 @@ int main(){
     scene.addHittable(rect4);
     scene.addHittable(rectL);
     scene.addHittable(t1);
-//    scene.addHittable(box1);
-//    scene.addHittable(box2);
     scene.buildBVH();
 
     // integrator
-    ALICE_TRACER::UniformIntegrator integrator{5, 5};
+    ALICE_TRACER::UniformIntegrator integrator{200, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
@@ -131,10 +125,6 @@ int main(){
     }
     widgets.destroyImGui();
     window.releaseWindow();
-
-//    for(auto & t: threads){
-//        t.join();
-//    }
 
     stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
     ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");

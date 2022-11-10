@@ -218,9 +218,9 @@ namespace ALICE_TRACER{
         return false;
     }
 
-    TriangleMesh::TriangleMesh(AVec3 center, AVec3 scale, Material *mtl, BxDFBase *bxdf):
+    TriangleMesh::TriangleMesh(AVec3 center, AVec3 scale, float angle, AVec3 axis, Material *mtl, BxDFBase *bxdf):
             Hittable(mtl, bxdf), center_(center), scale_(scale) {
-
+        rot_mat_ = ARotate(AMat4(1.f), ARadians(angle), axis);
     }
 
     TriangleMesh::TriangleMesh(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf):
