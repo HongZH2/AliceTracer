@@ -9,23 +9,36 @@
 #include "random_variable.h"
 
 namespace ALICE_TRACER{
-
+    // ---------------
+    // -- RussianRoulette
+    // ---------------
     class RussianRoulette{
     public:
+        static RussianRoulette & getInstance(){
+            static RussianRoulette instance;
+            return instance;
+        }
+
+        static bool isEnd(){
+            auto & instance = getInstance();
+            float random_val = ALICE_TRACER::random_val<float>();
+            if(random_val < instance.end_){
+                return false;
+            }
+            return true;
+        }
+
+        static float prob(){
+            auto & instance = getInstance();
+            return instance.end_;
+        }
+
+    private:
         RussianRoulette() = default;
         ~RussianRoulette() = default;
-
-        static RussianRoulette & getInstace(){
-
-        }
-
-        static bool evaluate(Color & col){
-            float random_val = ALICE_TRACER::random_val<float>();
-            if(random_val < end_){
-
-            }
-        }
-        float end_ = 0.5f; // the probability to end the path tracing
+        RussianRoulette(const RussianRoulette &) = delete;
+        RussianRoulette & operator=(const RussianRoulette &) = delete;
+        float end_ = 0.6f; // the probability to end the path tracing
     };
 
     // ---------------
@@ -58,7 +71,6 @@ namespace ALICE_TRACER{
         Color render(AVec2i pixel, AVec2i resolution, Scene * scene) override;
     protected:
         void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
-        void doShading(HitRes & hit_res, Ray & in_ray, Ray & out_ray);        // do the shading math
         Ray generateSampleRay(HitRes & hit_res);
     };
 }

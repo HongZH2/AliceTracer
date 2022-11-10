@@ -58,22 +58,43 @@ namespace ALICE_TRACER{
                 cluster_list->CheckHittable(in_ray, hit_res);
             if (hit_res.is_hit_) {
                 // if it is hit by some certain hittable instance
+                in_ray.color_ = hit_res.mtl_->emit();
+                if(RussianRoulette::isEnd())
+                    return;
+
                 // step 1. generate the out ray from the hitting point
                 Ray out_ray = generateSampleRay(hit_res);
+
                 // step 2. trace the new ray
                 traceRay(scene, out_ray, iteration - 1);
+
                 // step 3. shading/evaluate the BxDF
-                doShading(hit_res, in_ray, out_ray);
-                return;
+                // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
+                if(!hit_res.bxdf_ || !hit_res.mtl_) {
+                    AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
+                    return;
+                }
+                // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
+                AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
+                float pdf = hit_res.bxdf_->samplePDF(out_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                if(AIsNan(bxdf)){
+                    AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
+                    return;
+                }
+
+                // step 4. evaluate the reflection with RussianRoulette
+                in_ray.color_ += bxdf / pdf * out_ray.color_.ToVec3()/ RussianRoulette::prob();
+
             }
-            // or not. we can do something else instead. For instance, sampling a skybox
-            if(background_func){
-                AVec3 col;
-                background_func(in_ray.dir_, col);
-                in_ray.color_ = col;
-            }
-            else{
-                in_ray.color_ = AVec3(0.f);
+            else {
+                // or not. we can do something else instead. For instance, sampling a skybox
+                if (background_func) {
+                    AVec3 col;
+                    background_func(in_ray.dir_, col);
+                    in_ray.color_ = col;
+                } else {
+                    in_ray.color_ = AVec3(0.f);
+                }
             }
         }
     }
@@ -99,20 +120,6 @@ namespace ALICE_TRACER{
         return out_ray;
     }
 
-    void UniformIntegrator::doShading(HitRes &hit_res, Ray &in_ray, Ray &out_ray) {
-        // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
-        if(!hit_res.bxdf_ || !hit_res.mtl_) {
-            AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
-            return;
-        }
-        // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
-        AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
-        float pdf = hit_res.bxdf_->samplePDF(out_ray.dir_, hit_res.normal_, hit_res.mtl_);
-        if(AIsNan(bxdf)){
-            AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
-            return;
-        }
-        in_ray.color_ = hit_res.mtl_->emit() + bxdf / pdf * out_ray.color_.ToVec3();
-    }
+
 
 }
