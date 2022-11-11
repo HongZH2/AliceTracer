@@ -88,7 +88,7 @@ namespace ALICE_TRACER{
 
     void ClusterList::addHittableInst(Hittable *hittable_inst) {
         if(hittable_inst) {
-            hittable_inst->setID((uint32_t)hittable_array_.size());
+            hittable_inst->setID(id_ + (uint32_t)hittable_array_.size());
             hittable_array_.push_back(hittable_inst);
         }
     }
@@ -98,55 +98,55 @@ namespace ALICE_TRACER{
             hittable_array_.erase(hittable_array_.begin() + id);
     }
 
-    // -------------------------------
-    // Box(6-face cluster list)
-    // -------------------------------
-    void Box::generateBox(){
-        // create the box
-        RectangleXY * rect1 = new RectangleXY{center_ + AVec3(0.f, 0.f, scale_.z/2.f), AVec2(scale_.x, scale_.y), mtl_, bxdf_};
-        RectangleXZ * rect2 = new RectangleXZ{center_ + AVec3(0.f, scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z), mtl_, bxdf_};
-        RectangleYZ * rect3 = new RectangleYZ{center_ + AVec3(scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z), mtl_, bxdf_};
-        RectangleXY * rect4 = new RectangleXY{center_ + AVec3(0.f, 0.f, -scale_.z/2.f), AVec2(scale_.x, scale_.y),mtl_, bxdf_};
-        RectangleXZ * rect5 = new RectangleXZ{center_ + AVec3(0.f, -scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z),mtl_, bxdf_};
-        RectangleYZ * rect6 = new RectangleYZ{center_ + AVec3(-scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z),mtl_, bxdf_};
-        hittable_array_.addHittableInst(rect1);
-        hittable_array_.addHittableInst(rect2);
-        hittable_array_.addHittableInst(rect3);
-        hittable_array_.addHittableInst(rect4);
-        hittable_array_.addHittableInst(rect5);
-        hittable_array_.addHittableInst(rect6);
-    };
-
-    Box::Box(ALICE_UTILS::AVec3 center, ALICE_UTILS::AVec3 scale, ALICE_TRACER::Material *mtl,
-             ALICE_TRACER::BxDFBase *bxdf): center_(center), scale_(scale) {
-        mtl_ = mtl;
-        bxdf_ = bxdf;
-        generateBox();
-        hittable_array_.buildBVH();
-    }
-
-    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf){
-        mtl_ = mtl;
-        bxdf_ = bxdf;
-        generateBox();
-        hittable_array_.buildBVH();
-    }
-
-    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf, ALICE_TRACER::Movement *movement){
-        mtl_ = mtl;
-        bxdf_ = bxdf;
-        movement_ = movement;
-        generateBox();
-        hittable_array_.buildBVH();
-    }
-
-    AABB *Box::boundLimit(float frame_time) {
-        return hittable_array_.boundLimit(frame_time);
-    }
-
-    bool Box::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
-        return hittable_array_.CheckHittable(ray, hit_res);
-    }
+//    // -------------------------------
+//    // Box(6-face cluster list)
+//    // -------------------------------
+//    void Box::generateBox(){
+//        // create the box
+//        RectangleXY * rect1 = new RectangleXY{center_ + AVec3(0.f, 0.f, scale_.z/2.f), AVec2(scale_.x, scale_.y), mtl_, bxdf_};
+//        RectangleXZ * rect2 = new RectangleXZ{center_ + AVec3(0.f, scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z), mtl_, bxdf_};
+//        RectangleYZ * rect3 = new RectangleYZ{center_ + AVec3(scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z), mtl_, bxdf_};
+//        RectangleXY * rect4 = new RectangleXY{center_ + AVec3(0.f, 0.f, -scale_.z/2.f), AVec2(scale_.x, scale_.y),mtl_, bxdf_};
+//        RectangleXZ * rect5 = new RectangleXZ{center_ + AVec3(0.f, -scale_.y/2.f, 0.f), AVec2(scale_.x, scale_.z),mtl_, bxdf_};
+//        RectangleYZ * rect6 = new RectangleYZ{center_ + AVec3(-scale_.x/2.f, 0.f, 0.f), AVec2(scale_.y, scale_.z),mtl_, bxdf_};
+//        hittable_array_.addHittableInst(rect1);
+//        hittable_array_.addHittableInst(rect2);
+//        hittable_array_.addHittableInst(rect3);
+//        hittable_array_.addHittableInst(rect4);
+//        hittable_array_.addHittableInst(rect5);
+//        hittable_array_.addHittableInst(rect6);
+//    };
+//
+//    Box::Box(ALICE_UTILS::AVec3 center, ALICE_UTILS::AVec3 scale, ALICE_TRACER::Material *mtl,
+//             ALICE_TRACER::BxDFBase *bxdf): center_(center), scale_(scale) {
+//        mtl_ = mtl;
+//        bxdf_ = bxdf;
+//        generateBox();
+//        hittable_array_.buildBVH();
+//    }
+//
+//    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf){
+//        mtl_ = mtl;
+//        bxdf_ = bxdf;
+//        generateBox();
+//        hittable_array_.buildBVH();
+//    }
+//
+//    Box::Box(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf, ALICE_TRACER::Movement *movement){
+//        mtl_ = mtl;
+//        bxdf_ = bxdf;
+//        movement_ = movement;
+//        generateBox();
+//        hittable_array_.buildBVH();
+//    }
+//
+//    AABB *Box::boundLimit(float frame_time) {
+//        return hittable_array_.boundLimit(frame_time);
+//    }
+//
+//    bool Box::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
+//        return hittable_array_.CheckHittable(ray, hit_res);
+//    }
 
     // -------------------------------
     // Triangle Mesh
@@ -206,6 +206,7 @@ namespace ALICE_TRACER{
         if(beta > 0.f && lambda > 0.f && beta + lambda < 1.f){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.hittable_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;

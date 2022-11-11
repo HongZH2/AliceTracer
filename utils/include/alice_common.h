@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstdint>
+#include <variant>
 #include "alice_log.h"
 
 namespace ALICE_UTILS {

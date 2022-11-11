@@ -84,6 +84,9 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
@@ -102,6 +105,9 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
@@ -120,6 +126,9 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom

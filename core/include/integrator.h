@@ -5,7 +5,7 @@
 #ifndef ALICE_TRACER_INTEGRATOR_H
 #define ALICE_TRACER_INTEGRATOR_H
 
-#include "scene.h"
+#include "sampler.h"
 #include "random_variable.h"
 
 namespace ALICE_TRACER{
@@ -18,7 +18,6 @@ namespace ALICE_TRACER{
             static RussianRoulette instance;
             return instance;
         }
-
         static bool isEnd(){
             auto & instance = getInstance();
             float random_val = ALICE_TRACER::random_val<float>();
@@ -27,7 +26,6 @@ namespace ALICE_TRACER{
             }
             return true;
         }
-
         static float prob(){
             auto & instance = getInstance();
             return instance.end_;
@@ -38,14 +36,7 @@ namespace ALICE_TRACER{
         ~RussianRoulette() = default;
         RussianRoulette(const RussianRoulette &) = delete;
         RussianRoulette & operator=(const RussianRoulette &) = delete;
-        float end_ = 0.6f; // the probability to end the path tracing
-    };
-
-    // ---------------
-    // -- sampler: to sample lights and textures and so on
-    // ---------------
-    class Sampler{
-
+        float end_ = 0.8f; // the probability to end the path tracing
     };
 
     // ---------------
@@ -53,7 +44,7 @@ namespace ALICE_TRACER{
     // ---------------
     class Integrator{
     public:
-        Integrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration);
+        Integrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration, uint32_t min_num_iteration);
         ~Integrator() = default;
 
         virtual Color render(AVec2i pixel, AVec2i resolution, Scene * scene) = 0;
@@ -61,11 +52,15 @@ namespace ALICE_TRACER{
     protected:
         uint32_t num_sampler_per_pixel_ = 1; // the number of the samples per pixel
         uint32_t max_num_iteration_ = 1;  // the maximum number of the tracing recursion
+        uint32_t min_num_iteration_ = 1;  // the minimum number of the tracing recursion
     };
 
+    // ---------------
+    // UniformIntegrator
+    // ---------------
     class UniformIntegrator: public Integrator{
     public:
-        UniformIntegrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration);
+        UniformIntegrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration, uint32_t min_num_iteration);
         ~UniformIntegrator() = default;
 
         Color render(AVec2i pixel, AVec2i resolution, Scene * scene) override;
@@ -73,6 +68,21 @@ namespace ALICE_TRACER{
         void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
         Ray generateSampleRay(HitRes & hit_res);
     };
+
+    // ---------------
+    // NextEventEstimate
+    // ---------------
+    class NEEIntegrator: public Integrator{
+    public:
+        NEEIntegrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration, uint32_t min_num_iteration);
+        ~NEEIntegrator() = default;
+
+        Color render(AVec2i pixel, AVec2i resolution, Scene * scene) override;
+    protected:
+        void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
+        Ray generateSampleRay(HitRes & hit_res);
+    };
+
 }
 
 #endif //ALICE_TRACER_INTEGRATOR_H

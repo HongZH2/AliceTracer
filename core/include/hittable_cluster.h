@@ -48,23 +48,23 @@ namespace ALICE_TRACER{
         std::vector<Hittable *> hittable_array_;  // a list of the hittable instances
     };
 
-    // -------------------------------
-    // Box(6-face cluster list)
-    // -------------------------------
-    class Box: public Hittable{
-    public:
-        Box(AVec3 center, AVec3 scale, Material *mtl, BxDFBase *bxdf);
-        Box(Material *mtl, BxDFBase *bxdf);
-        Box(Material *mtl, BxDFBase *bxdf, Movement * movement);
-        ~Box() override = default;
-        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
-        AABB * boundLimit(float frame_time) override;
-    private:
-        AVec3 center_ = AVec3(0.f);
-        AVec3 scale_ = AVec3(1.f);
-        void generateBox();
-        ClusterList hittable_array_;
-    };
+//    // -------------------------------
+//    // Box(6-face cluster list)
+//    // -------------------------------
+//    class Box: public Hittable{
+//    public:
+//        Box(AVec3 center, AVec3 scale, Material *mtl, BxDFBase *bxdf);
+//        Box(Material *mtl, BxDFBase *bxdf);
+//        Box(Material *mtl, BxDFBase *bxdf, Movement * movement);
+//        ~Box() override = default;
+//        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+//        AABB * boundLimit(float frame_time) override;
+//    private:
+//        AVec3 center_ = AVec3(0.f);
+//        AVec3 scale_ = AVec3(1.f);
+//        void generateBox();
+//        ClusterList hittable_array_;
+//    };
 
     // -------------------------------
     // Linear Interpolation on the triangle

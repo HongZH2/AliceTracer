@@ -132,6 +132,7 @@ namespace ALICE_TRACER{
 
             if(t1 < ray.t_max_ && t1 > ray.t_min_) {
                 ray.t_max_ = t1;
+                hit_res.hittable_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -188,6 +189,7 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.y > lb[1] && point.y < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.hittable_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -244,6 +246,7 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.hittable_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -299,6 +302,7 @@ namespace ALICE_TRACER{
         if(point.y > lb[0] && point.y < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.hittable_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
