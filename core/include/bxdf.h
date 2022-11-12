@@ -8,71 +8,35 @@
 #include "material.h"
 
 namespace ALICE_TRACER{
-
-    // --------------------------------------
-    // Helper Function For Evaluation of BxDF
-    // --------------------------------------
-
-
     // --------------------------------------
     // BxDF Definition
     // --------------------------------------
-    /*
-     * Define the BxDF base class
-     */
     class BxDFBase{
     public:
         BxDFBase() = default;
         virtual ~BxDFBase() = default;
-
-        /*
-         * evaluate the BxDF
-         */
+         // evaluate the BxDF
         virtual AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) = 0;
-        /*
-         * uniform sample/importance sample by BxDF
-         */
+        // sample the BxDF
         virtual AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) = 0;
-        /*
-         * given a sampling direction, return the pdf
-         */
+        // compute the pdf of the sample direction
         virtual float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) = 0;
     };
 
     /*
     * Define the BRDF class
+     * brdf = cos<norm, light> * dw
     */
     class CosinWeightedBRDF: public BxDFBase{
     public:
         CosinWeightedBRDF() = default;
         ~CosinWeightedBRDF() override = default;
-
         AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
         AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) override;
         float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) override;
     };
 
-    /*
-     * Define the BRDF class
-     */
-    class LambertBRDF: public BxDFBase{
-    public:
-        LambertBRDF() = default;
-        ~LambertBRDF() override = default;
 
-        AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
-        AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) override;
-        float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) override;
-    };
-
-//    /*
-//     * Disney Diffuse
-//     */
-//    class DisneyDiff:: public BxDFBase{
-//    public:
-//        DisneyDiff() = default;
-//        ~DisneyDiff() = default;
-//    };
 
 
 }

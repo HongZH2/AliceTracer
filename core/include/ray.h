@@ -27,8 +27,8 @@ namespace ALICE_TRACER{
     // Hit Response
     struct HitRes{
         bool is_hit_ = false;
-        uint32_t hittable_id_ = INT32_MAX;
         float frame_time_ = -1;
+        uint32_t uni_id_ = INT_MAX;
         AVec3 point_;
         AVec3 normal_;
         Material * mtl_ = nullptr;

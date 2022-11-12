@@ -6,15 +6,18 @@
 #include "interface/include/window.h"
 #include "interface/include/imgui_widgets.h"
 #include "interface/include/render_texture.h"
+#include "interface/include/model_loader.h"
 
 // render core components
 #include "core/include/image.h"
 #include "core/include/camera.h"
 #include "core/include/scene.h"
-
+#include "core/include/integrator.h"
+#include "utils/include/alice_threads.h"
 // stb image
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "third_parties/stb_image/stb_write.h"
+
 
 int main(){
 
@@ -54,13 +57,18 @@ int main(){
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(5.f)};
 
     // bxdf
-    ALICE_TRACER::LambertBRDF lambert;
+    ALICE_TRACER::CosinWeightedBRDF lambert;
     ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.3f, &mtl1, &lambert};
     ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(2.f, -0.3f, 0.f), AVec3(0.6f), &mtl2, &lambert};
     ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(0.f, -0.6f, 0.f), AVec2(8.f, 6.f), &mtl3, &lambert};
 
+    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, -1.f), AVec3(100.0f), 0.f, AVec3(0.f, 1.f ,0.f), &mtl3, &lambert};
+//    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+    ALICE_TRACER::ModelLoader::loadModel("../assets/material_sphere/material_sphere.fbx", t1);
+    t1->setTriangleMaterial(0, &mtl1, &lambert);
+
     // set up the scene
-    ALICE_TRACER::Scene scene{5, 5};
+    ALICE_TRACER::Scene scene;
     scene.setBgFunc([](AVec3 & dir, AVec3 & col){
         float t = 0.5f * (dir.y + 1.0f);
         col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
@@ -69,44 +77,42 @@ int main(){
     scene.addHittable(sphere1);
     scene.addHittable(rect1);
     scene.addHittable(rect0);
+    scene.addHittable(t1);
     scene.buildBVH();
 
+    // integrator
+    ALICE_TRACER::NEEIntegrator integrator{5, 50, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
     texture.loadGPUTexture(&result_image);
 
     // generate the image pixel by pixel
-    // submit multiple
-    uint32_t num_pack = 8;
-    uint32_t num_column = ceil(result_image.h()/num_pack);
-    std::vector<std::thread> threads{num_pack};
+    uint32_t num_pack = 16;
+    uint32_t num_col = ceil(result_image.h()/num_pack);
+    uint32_t num_row = ceil(result_image.w()/num_pack);
     for(uint32_t n = 0; n < num_pack; ++n){
         // submit the task
-        threads[n] = std::thread([&](uint32_t cur_n){
-            for (uint32_t i = cur_n * num_column; i < (cur_n + 1) * num_column && i < result_image.h(); ++i) {
-                for (uint32_t j = 0; j < result_image.w(); ++j) {
-                    // get the current pixel and re
-                    AVec2i pixel{j, i};
-                    ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
-                    // float to unsigned int 255
-                    AVec3i color = pixel_col.ToUInt();
-                    // assign the color to RGB channel
-                    for (uint32_t c = 0; c < result_image.c(); ++c) {
-                        result_image(i, j, c) = color[c];
+        for(uint32_t m = 0; m < num_pack; ++m){
+            ThreadPool::submitTask([&](uint32_t cur_n, uint32_t cur_m){
+                for (uint32_t i = cur_n * num_col; i < (cur_n + 1) * num_col && i < result_image.h(); ++i) {
+                    for (uint32_t j = cur_m * num_row; j < (cur_m + 1) * num_row && j < result_image.w(); ++j) {
+                        // get the current pixel and resolution
+                        AVec2i pixel{j, i};
+                        ALICE_TRACER::Color pixel_col = integrator.render(pixel, resolution, &scene);
+                        // float to unsigned int 255
+                        AVec3i color = pixel_col.ToUInt();
+                        // assign the color to RGB channel
+                        for (uint32_t c = 0; c < result_image.c(); ++c) {
+                            result_image(i, j, c) = color[c];
+                        }
                     }
                 }
-            }
-        }, n);
+            }, n, m);
+        }
     }
 
-    for(auto & t: threads){
-        t.join();
-    }
-
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
-    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
-
+    // render to the screen
     while(window.updateWindow()){
         // render to the screen
         texture.updateTexture(&result_image);

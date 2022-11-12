@@ -8,14 +8,19 @@
 namespace ALICE_TRACER{
 
     // transfer the camera coordinate to the world cooridnate
-    void Camera::cameraToWorld(AVec3 & dir) const{
-        // rotate the
+    void Camera::cameraToWorld(AVec3 & dir){
+        // rotate the camera ray
+        forward_ = ANormalize(pos_ - look_at_);
+        if(ADot(head_up_, forward_) > 1.f - MIN_THRESHOLD){
+            head_up_ = AVec3(0.f, 0.f, 1.f);
+        }
+        right_ = ACross(head_up_, forward_);
         AMat3 transform = {forward_, right_, head_up_};
         dir = transform  * dir;
     }
 
     // Given a pixel and the resolution of the image, compute a single camera ray shot from the center of the pixel
-    Ray Camera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const {
+    Ray Camera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) {
         // compute the direction of camera ray
         AVec2 c_pixel = AVec2(pixel) + offset; // center of the current pixel
         AVec2 c_resolution = AVec2(resolution) - 1.f;
@@ -32,7 +37,7 @@ namespace ALICE_TRACER{
     }
 
 
-    Ray ThinLenCamera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const {
+    Ray ThinLenCamera::getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) {
         float lens_radius = aperture_/2.f;
         AVec2 len_offset = lens_radius * 2.f * offset - 0.5f;
         AVec3 look_from = pos_ + head_up_ * len_offset.y + right_ * len_offset.x;

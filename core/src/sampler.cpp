@@ -34,6 +34,7 @@ namespace ALICE_TRACER{
 
     float LightSampler::sampleLight(Scene * scene, HitRes & hit_res, Ray & out_ray) {
         // randomly pick a light // TODO
+        if(scene->lights_.empty()) return FLT_MAX;
         int32_t light_id = ALICE_TRACER::random_int(0, scene->lights_.size()-1);
         auto light = scene->lights_.at(light_id);
         int32_t light_t = light.index();
@@ -42,10 +43,11 @@ namespace ALICE_TRACER{
                 RectangleXZ *rect = std::get<RectangleXZ *>(light);
                 float pdf = sampleRectangleXZ(rect, hit_res, out_ray);
                 HitRes l_hit;
-                if(rect->CheckHittable(out_ray, l_hit)){  // check if it is hit by the sample point
+                scene->cluster_->CheckHittable(out_ray, l_hit);
+                if(l_hit.is_hit_ && l_hit.uni_id_ == rect->id()){  // check if it is hit by the sample point
                     out_ray.color_ = l_hit.mtl_->emit();
                 }
-                return pdf;
+                return pdf * 1.f/scene->lights_.size();
             }
             default:
                 break;

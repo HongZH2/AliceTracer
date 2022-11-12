@@ -3,6 +3,7 @@
 //
 
 #include "core/include/hittable.h"
+#include "core/include/random_variable.h"
 
 namespace ALICE_TRACER{
     // ------------------------------------------------------------
@@ -67,14 +68,17 @@ namespace ALICE_TRACER{
     // ------------------------------------------------------------
     Hittable::Hittable(){
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf): mtl_(mtl), bxdf_(bxdf) {
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf, Movement * movement): mtl_(mtl), bxdf_(bxdf), movement_(movement) {
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::~Hittable() {
@@ -86,7 +90,7 @@ namespace ALICE_TRACER{
     }
 
     // --------------------
-    // -- Rectangle
+    // -- Sphere
     // --------------------
     Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf)
             : Hittable(mtl, bxdf), center_(center), radius_(radius){
@@ -132,7 +136,7 @@ namespace ALICE_TRACER{
 
             if(t1 < ray.t_max_ && t1 > ray.t_min_) {
                 ray.t_max_ = t1;
-                hit_res.hittable_id_ = id_;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -189,7 +193,7 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.y > lb[1] && point.y < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
-                hit_res.hittable_id_ = id_;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -246,7 +250,7 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
-                hit_res.hittable_id_ = id_;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -302,7 +306,7 @@ namespace ALICE_TRACER{
         if(point.y > lb[0] && point.y < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
-                hit_res.hittable_id_ = id_;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;

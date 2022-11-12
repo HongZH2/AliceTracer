@@ -43,7 +43,7 @@ namespace ALICE_TRACER{
     }
 
     void ClusterList::setUpBVH(Hittable* & node, std::vector<Hittable *> & hittable_list) {
-        if(hittable_array_.size() <= 0)
+        if(hittable_array_.empty())
             return;
         if(hittable_list.size() == 1){
             node = hittable_list[0];
@@ -83,20 +83,15 @@ namespace ALICE_TRACER{
     AABB *ClusterList::boundLimit(float frame_time) {
         if(bvh_tree_)
             return bvh_tree_->boundLimit(frame_time);
-        return boundLimit(frame_time);
+        return Hittable::boundLimit(frame_time);
     }
 
     void ClusterList::addHittableInst(Hittable *hittable_inst) {
         if(hittable_inst) {
-            hittable_inst->setID(id_ + (uint32_t)hittable_array_.size());
             hittable_array_.push_back(hittable_inst);
         }
     }
 
-    void ClusterList::removeHittableInst(uint32_t id) {
-        if(id < hittable_array_.size())
-            hittable_array_.erase(hittable_array_.begin() + id);
-    }
 
 //    // -------------------------------
 //    // Box(6-face cluster list)
@@ -206,7 +201,7 @@ namespace ALICE_TRACER{
         if(beta > 0.f && lambda > 0.f && beta + lambda < 1.f){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
-                hit_res.hittable_id_ = id_;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -219,11 +214,6 @@ namespace ALICE_TRACER{
         return false;
     }
 
-    TriangleMesh::TriangleMesh(AVec3 center, AVec3 scale, float angle, AVec3 axis, Material *mtl, BxDFBase *bxdf):
-            Hittable(mtl, bxdf), center_(center), scale_(scale) {
-        rot_mat_ = ARotate(AMat4(1.f), ARadians(angle), axis);
-    }
-
     TriangleMesh::TriangleMesh(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf):
         Hittable(mtl, bxdf){
 
@@ -233,6 +223,13 @@ namespace ALICE_TRACER{
                                ALICE_TRACER::Movement *movement):
             Hittable(mtl, bxdf){
 
+    }
+
+    void TriangleMesh::setTriangleMaterial(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf) {
+        for(auto & triangle: hittable_array_.getInst()){
+            triangle->setMaterial(mtl);
+            triangle->setBxdf(bxdf);
+        }
     }
 
     AABB *TriangleMesh::boundLimit(float frame_time) {
@@ -255,4 +252,57 @@ namespace ALICE_TRACER{
         }
         hittable_array_.buildBVH();
     }
+
+    // -------------------------------
+    // Linear Interpolation on the triangle
+    // Triangle Mesh
+    // -------------------------------
+    TriangleInstance::TriangleInstance(AVec3 center, AVec3 scale, float angle, AVec3 axis, Material *mtl, BxDFBase *bxdf):
+            Hittable(mtl, bxdf), center_(center), scale_(scale) {
+        rot_mat_ = ARotate(AMat4(1.f), ARadians(angle), axis);
+    }
+
+    TriangleInstance::TriangleInstance(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf):
+            Hittable(mtl, bxdf){
+
+    }
+
+    TriangleInstance::TriangleInstance(ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf,
+                                       ALICE_TRACER::Movement *movement):
+            Hittable(mtl, bxdf){
+
+    }
+
+    AABB *TriangleInstance::boundLimit(float frame_time) {
+        return hittable_array_.boundLimit(frame_time);
+    }
+
+    bool TriangleInstance::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
+        return hittable_array_.CheckHittable(ray, hit_res);
+    }
+
+    void TriangleInstance::addTriangleMesh(ALICE_TRACER::TriangleMesh *triangle_mesh) {
+        hittable_array_.addHittableInst(triangle_mesh);
+    }
+
+    void TriangleInstance::setTriangleMaterial(uint32_t id, ALICE_TRACER::Material *mtl, ALICE_TRACER::BxDFBase *bxdf) {
+        auto & hittable_list = hittable_array_.getInst();
+        if(id < hittable_list.size()){
+            TriangleMesh * triangle_mesh = dynamic_cast<TriangleMesh *>(hittable_list[id]);
+            if(! triangle_mesh) return;
+            triangle_mesh->setTriangleMaterial(mtl, bxdf);
+            triangle_mesh->setMaterial(mtl);
+            triangle_mesh->setBxdf(bxdf);
+        }
+    }
+
+    void TriangleInstance::parseMesh() {
+        for(auto & hittable: hittable_array_.getInst()){
+            TriangleMesh * triangle_mesh = dynamic_cast<TriangleMesh*>(hittable);
+            if(triangle_mesh) triangle_mesh->parseMesh();
+        }
+        hittable_array_.buildBVH();
+    }
+
+
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(Playground)
+project(Materials)
 
 ###############
 # Third Parties
@@ -35,17 +35,15 @@ include_directories(
         ${SPDLOG_INCLUDE}
 )
 
-add_executable(${PROJECT_NAME} playground.cpp ${IMGUI_SRC})
+add_executable(${PROJECT_NAME} materials.cpp ${IMGUI_SRC})
 
 find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-find_library(OPENCL_LIBRARY OpenCL REQUIRED)
 find_library(COCOA_LIBRARY Cocoa REQUIRED)
 find_library(IOKIT_LIBRARY IOKit REQUIRED)
 find_library(COREVID_LIBRARY CoreVideo REQUIRED)
 
 target_link_libraries(
         ${PROJECT_NAME}
-        ${OPENCL_LIBRARY}
         ${OPENGL_LIBRARY}
         ${COCOA_LIBRARY}
         ${IOKIT_LIBRARY}

@@ -38,9 +38,8 @@ namespace ALICE_TRACER{
         AABB * boundLimit(float frame_time) override;
     public:
         void addHittableInst(Hittable * hittable_inst);
-        void removeHittableInst(uint32_t id);
         void buildBVH();
-
+        inline std::vector<Hittable *> & getInst(){return hittable_array_;}
     private:
         void releaseBVH(Hittable * node);
         void setUpBVH(Hittable* & node, std::vector<Hittable *> & hittable_list);
@@ -84,24 +83,52 @@ namespace ALICE_TRACER{
         AVec3 * tangent_;
     };
 
+    // -------------------------------
+    // Linear Interpolation on the triangle
+    // Triangle Mesh
+    // -------------------------------
     class TriangleMesh : public Hittable{
     public:
-        TriangleMesh(AVec3 center, AVec3 scale, float angle, AVec3 axis, Material *mtl, BxDFBase *bxdf);
         TriangleMesh(Material *mtl, BxDFBase *bxdf);
         TriangleMesh(Material *mtl, BxDFBase *bxdf, Movement * movement);
         ~TriangleMesh() override = default;
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
         void parseMesh();
-        inline AVec3 offset(){return center_;}
-        inline AVec3 scale(){return scale_;}
-        inline AMat3 rot(){return rot_mat_;}
+
+        void setTriangleMaterial(Material* mtl, BxDFBase * bxdf);
     public:
         std::vector<AVec3> vertices_;
         std::vector<AVec3i> indices_;
         std::vector<AVec3> tangent_;
         std::vector<AVec3> normal_;
         std::vector<AVec3> tex_coords_;
+    protected:
+        ClusterList hittable_array_;
+    };
+
+    // -------------------------------
+    // Triangle Instance
+    // -------------------------------
+    class TriangleInstance: public Hittable{
+    public:
+        TriangleInstance(AVec3 center, AVec3 scale, float angle, AVec3 axis, Material *mtl, BxDFBase *bxdf);
+        TriangleInstance(Material *mtl, BxDFBase *bxdf);
+        TriangleInstance(Material *mtl, BxDFBase *bxdf, Movement * movement);
+        ~TriangleInstance() override = default;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        AABB * boundLimit(float frame_time) override;
+
+        void setTriangleMaterial(uint32_t id, Material* mtl, BxDFBase * bxdf);
+        void addTriangleMesh(TriangleMesh * triangle_mesh);
+        void parseMesh();
+    public:
+        inline Material * material(){return mtl_;}
+        inline BxDFBase * bxdf(){return bxdf_;}
+        inline AVec3 offset(){return center_;}
+        inline AVec3 scale(){return scale_;}
+        inline AMat3 rot(){return rot_mat_;}
     protected:
         AVec3 center_ = AVec3(0.f);
         AVec3 scale_ = AVec3(1.f);

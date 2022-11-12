@@ -43,11 +43,12 @@ namespace ALICE_TRACER{
         virtual ~Hittable();
         virtual bool CheckHittable(Ray & ray, HitRes & hit_res) = 0;  // check if it is hit or not
         virtual AABB * boundLimit(float frame_time);
-
-        inline void setID(uint32_t id) {id_ = id;}
-        inline int32_t ID() const{return id_;}
+    public:
+        inline uint32_t id(){return id_;}
+        inline void setMaterial(Material* mtl){mtl_ = mtl;}
+        inline void setBxdf(BxDFBase * bxdf){bxdf_ = bxdf;}
     protected:
-        int32_t id_ = -1;
+        uint32_t id_; // unique id
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         AABB * bound_ = nullptr;

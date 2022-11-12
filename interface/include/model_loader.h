@@ -13,7 +13,7 @@ namespace ALICE_TRACER{
         ModelLoader() = default;
         ~ModelLoader() = default;
 
-        static void loadModel(const std::string & path, TriangleMesh * mesh);
+        static void loadModel(const std::string & path, TriangleInstance * mesh);
 
     };
 }

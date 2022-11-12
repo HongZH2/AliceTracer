@@ -16,121 +16,113 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "third_parties/stb_image/stb_write.h"
 
-int main(){
+#include <stdio.h>
+#include <stdlib.h>
 
-    // set the log level
-    ALICE_TRACER::AliceLog::setLogLevel(ALICE_TRACER::AliceLogType::debug);
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 
-    uint32_t width = 1200u;
-    uint32_t height = 800u;
-    float w_h_ratio = (float)width/(float)height;
+#define MAX_SOURCE_SIZE (0x100000)
 
-    // create a window
-    ALICE_TRACER::Window window{};
-    window.initWindow(width, height);
-    ALICE_TRACER::ImGUIWidget widgets;
-    widgets.initImGui();
-
-    // generate an empty image
-    ALICE_TRACER::ImageRGB result_image{width, height};
-    AVec2i resolution{result_image.w(), result_image.h()};
-
-    // define the camera in the scene
-    ALICE_TRACER::Camera camera;
-    camera.near_ = 0.1f;
-    camera.far_ = 100.f;
-    camera.fov_ = ARadians(60.f);
-    camera.ratio_ = w_h_ratio;
-    camera.pos_ = AVec3(0.f, 0.f, 4.f);
-//    camera.aperture_ = 0.1f;
-    camera.start_fm_ = 0.f;
-    camera.interval_ = 0.2f;
-
-    // set up the scene
-    // material
-    ALICE_TRACER::Material mtl1{AVec3(0.1f, 0.5f, 0.f)};
-    ALICE_TRACER::Material mtl2{AVec3(0.5f, 0.1f, 0.f)};
-    ALICE_TRACER::Material mtl3{ AVec3(0.3f)};
-    ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
-
-    // movement
-//    ALICE_TRACER::LinearMovement mv1;
-//    mv1.start_ = 0.f;
-//    mv1.end_ = 0.2;
-//    mv1.velocity_ = AVec3(0.f, 0.2f, 0.f);
-
-    // bxdf
-    ALICE_TRACER::LambertBRDF lambert;
-    ALICE_TRACER::Sphere* sphere1 = new ALICE_TRACER::Sphere{AVec3(-1.f, -0.3f, 0.f), 0.5f, &mtl1, &lambert};
-    ALICE_TRACER::Sphere * sphere2 = new ALICE_TRACER::Sphere{AVec3(-1.5f, -0.3f, 1.f), 0.5f, &mtl2, &lambert};
-    ALICE_TRACER::Sphere * sphere3 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.5f, &mtl3, &lambert};
-
-//    ALICE_TRACER::RectangleXY * rect1 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-//    ALICE_TRACER::RectangleXZ * rect2 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-//    ALICE_TRACER::RectangleYZ * rect3 = new ALICE_TRACER::RectangleYZ{AVec3(-1.f, 0.f, 0.f), AVec2(1.f), &mtl2, &lambert};
-    ALICE_TRACER::Box * box1 = new ALICE_TRACER::Box{AVec3(-1.f, -1.f, 0.f), AVec3(1.f), &mtl2, &lambert};
-
-    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{AVec3(0.f, -1.f, 0.f), AVec3(0.02f), &mtl1, &lambert};
-    ALICE_TRACER::ModelLoader::loadModel("../assets/lowPolyMan.obj", t1);
-
-    // set up the scene
-    ALICE_TRACER::Scene scene{50, 5};
-    scene.setBgFunc([](AVec3 & dir, AVec3 & col){
-        float t = 0.5f * (dir.y + 1.0f);
-        col = (1.0f - t) * AVec3(1.0f, 1.0f, 1.0f) + t * AVec3(0.5f, 0.7f, 1.0f);
-    });
-    scene.addCamera(camera);
-//    scene.addHittable(sphere1);
-//    scene.addHittable(sphere3);
-//    scene.addHittable(box1);
-    scene.addHittable(t1);
-    scene.buildBVH();
-
-    // create a texture
-    ALICE_TRACER::TextureBuffer texture;
-    texture.loadGPUTexture(&result_image);
-
-    // generate the image pixel by pixel
-    uint32_t num_pack = 16;
-    uint32_t num_col = ceil(result_image.h()/num_pack);
-    uint32_t num_row = ceil(result_image.w()/num_pack);
-    for(uint32_t n = 0; n < num_pack; ++n){
-        // submit the task
-        for(uint32_t m = 0; m < num_pack; ++m){
-            ThreadPool::submitTask([&](uint32_t cur_n, uint32_t cur_m){
-                for (uint32_t i = cur_n * num_col; i < (cur_n + 1) * num_col && i < result_image.h(); ++i) {
-                    for (uint32_t j = cur_m * num_row; j < (cur_m + 1) * num_row && j < result_image.w(); ++j) {
-                        // get the current pixel and resolution
-                        AVec2i pixel{j, i};
-                        ALICE_TRACER::Color pixel_col = scene.computePixel(pixel, resolution);
-                        // float to unsigned int 255
-                        AVec3i color = pixel_col.ToUInt();
-                        // assign the color to RGB channel
-                        for (uint32_t c = 0; c < result_image.c(); ++c) {
-                            result_image(i, j, c) = color[c];
-                        }
-                    }
-                }
-            }, n, m);
-        }
+int main(void) {
+    // Create the two input vectors
+    int i;
+    const int LIST_SIZE = 1024;
+    int *A = (int*)malloc(sizeof(int)*LIST_SIZE);
+    int *B = (int*)malloc(sizeof(int)*LIST_SIZE);
+    for(i = 0; i < LIST_SIZE; i++) {
+        A[i] = i;
+        B[i] = LIST_SIZE - i;
     }
 
-    while(window.updateWindow()) {
-        // render to the screen
-        texture.updateTexture(&result_image);
-        texture.drawTexture();
-        widgets.updateImGui();
-        window.swapBuffer();
+    // Load the kernel source code into the array source_str
+    FILE *fp;
+    char *source_str;
+    size_t source_size;
+
+    fp = fopen("../examples/playground/vector_add_kernel.cl", "r");
+    if (!fp) {
+        fprintf(stderr, "Failed to load kernel.\n");
+        exit(1);
     }
-    widgets.destroyImGui();
-    window.releaseWindow();
+    source_str = (char*)malloc(MAX_SOURCE_SIZE);
+    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
+    fclose( fp );
 
-//    for(auto & t: threads){
-//        t.join();
-//    }
+    // Get platform and device information
+    cl_platform_id platform_id = NULL;
+    cl_device_id device_id = NULL;
+    cl_uint ret_num_devices;
+    cl_uint ret_num_platforms;
+    cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+    ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_DEFAULT, 1,
+                          &device_id, &ret_num_devices);
 
-    stbi_write_png("../showcases/test.png", result_image.w(), result_image.h(), result_image.c(), result_image.getDataPtr(), 0);
-    ALICE_TRACER::AliceLog::submitDebugLog("Completed!\n");
+    // Create an OpenCL context
+    cl_context context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
 
+    // Create a command queue
+    cl_command_queue command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
+
+    // Create memory buffers on the device for each vector
+    cl_mem a_mem_obj = clCreateBuffer(context, CL_MEM_READ_ONLY,
+                                      LIST_SIZE * sizeof(int), NULL, &ret);
+    cl_mem b_mem_obj = clCreateBuffer(context, CL_MEM_READ_ONLY,
+                                      LIST_SIZE * sizeof(int), NULL, &ret);
+    cl_mem c_mem_obj = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
+                                      LIST_SIZE * sizeof(int), NULL, &ret);
+
+    // Copy the lists A and B to their respective memory buffers
+    ret = clEnqueueWriteBuffer(command_queue, a_mem_obj, CL_TRUE, 0,
+                               LIST_SIZE * sizeof(int), A, 0, NULL, NULL);
+    ret = clEnqueueWriteBuffer(command_queue, b_mem_obj, CL_TRUE, 0,
+                               LIST_SIZE * sizeof(int), B, 0, NULL, NULL);
+
+    // Create a program from the kernel source
+    cl_program program = clCreateProgramWithSource(context, 1,
+                                                   (const char **)&source_str, (const size_t *)&source_size, &ret);
+
+    // Build the program
+    ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+
+    // Create the OpenCL kernel
+    cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
+
+    // Set the arguments of the kernel
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&a_mem_obj);
+    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&b_mem_obj);
+    ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&c_mem_obj);
+
+    // Execute the OpenCL kernel on the list
+    size_t global_item_size = LIST_SIZE; // Process the entire lists
+    size_t local_item_size = 64; // Divide work items into groups of 64
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
+                                 &global_item_size, &local_item_size, 0, NULL, NULL);
+
+    // Read the memory buffer C on the device to the local variable C
+    int *C = (int*)malloc(sizeof(int)*LIST_SIZE);
+    ret = clEnqueueReadBuffer(command_queue, c_mem_obj, CL_TRUE, 0,
+                              LIST_SIZE * sizeof(int), C, 0, NULL, NULL);
+
+    // Display the result to the screen
+    for(i = 0; i < LIST_SIZE; i++)
+        printf("%d + %d = %d\n", A[i], B[i], C[i]);
+
+    // Clean up
+    ret = clFlush(command_queue);
+    ret = clFinish(command_queue);
+    ret = clReleaseKernel(kernel);
+    ret = clReleaseProgram(program);
+    ret = clReleaseMemObject(a_mem_obj);
+    ret = clReleaseMemObject(b_mem_obj);
+    ret = clReleaseMemObject(c_mem_obj);
+    ret = clReleaseCommandQueue(command_queue);
+    ret = clReleaseContext(context);
+    free(A);
+    free(B);
+    free(C);
     return 0;
 }
