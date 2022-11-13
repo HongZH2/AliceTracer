@@ -24,6 +24,7 @@ namespace ALICE_TRACER{
         LightSampler() = default;
         ~LightSampler() = default;
         static float sampleLight(Scene * scene, HitRes &hit_res, Ray & out_ray);
+        static float sampleLight(Scene * scene, int32_t id, HitRes &hit_res, Ray & out_ray);
     };
 
 }

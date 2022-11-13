@@ -83,6 +83,19 @@ namespace ALICE_TRACER{
         Ray generateSampleRay(HitRes & hit_res);
     };
 
+    // ---------------
+    // Multiple Importance Sampling
+    // ---------------
+    class MISIntegrator: public Integrator{
+    public:
+        MISIntegrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration, uint32_t min_num_iteration);
+        ~MISIntegrator() = default;
+        Color render(AVec2i pixel, AVec2i resolution, Scene * scene) override;
+    protected:
+        void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
+        Ray generateSampleRay(Scene * scene, HitRes & hit_res);
+    };
+
 }
 
 #endif //ALICE_TRACER_INTEGRATOR_H
