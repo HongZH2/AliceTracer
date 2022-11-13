@@ -182,7 +182,7 @@ namespace ALICE_TRACER{
         if(ADot(norm, ray.dir_) < MIN_THRESHOLD && ADot(norm, ray.dir_) > -MIN_THRESHOLD)
             return false;
         AVec3 vo1 = v1 - ray.start_;
-        AMat3 A {v21, v31, ray.dir_};
+        AMat3 A {v21, v31, ray.dir_}; // refer to the book "the foundations of computer graphics"
         float M = A[0][0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2])
                     + A[0][1] * (A[2][0] * A[1][2] - A[1][0] * A[2][2])
                     + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);

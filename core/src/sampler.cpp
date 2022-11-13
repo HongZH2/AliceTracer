@@ -4,6 +4,7 @@
 
 #include "core/include/sampler.h"
 #include "core/include/random_variable.h"
+
 namespace ALICE_TRACER{
 
     // sample the rectangle light

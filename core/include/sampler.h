@@ -16,6 +16,7 @@ namespace ALICE_TRACER{
         Sampler() = default;
         ~Sampler() = default;
         static float sampleRectangleXZ(RectangleXZ *rect, HitRes &hit_res, Ray & out_ray);
+
     };
 
     class LightSampler:public Sampler{

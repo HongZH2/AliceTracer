@@ -2,7 +2,14 @@
 // Created by Hong Zhang on 2022/10/30.
 //
 #include "interface/include/render_texture.h"
+
+#ifdef __APPLE__
 #include "OpenGL/gl3.h"
+#elif __linux__
+#define GL_GLEXT_PROTOTYPES
+#include "GL/gl.h"
+#include "GL/glext.h"
+#endif
 
 namespace ALICE_TRACER{
 

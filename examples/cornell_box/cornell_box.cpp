@@ -66,7 +66,9 @@ int main(){
 
     // light
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(5.f)};
-    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 1.98f, 0.f), AVec3(2.f), &mtl4, &lambert};
+    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(1.f, 1.98f, 0.f), AVec3(1.f), &mtl4, &lambert};
+    ALICE_TRACER::RectangleXZ * rectL2 = new ALICE_TRACER::RectangleXZ{AVec3(-1.f, 1.98f, 0.f), AVec3(1.f), &mtl4, &lambert};
+
 
     ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -1.5f, 0.f), AVec3(1.5f), 0.f, AVec3(1.f, 0.f ,0.f), &mtl3, &lambert};
     ALICE_TRACER::ModelLoader::loadModel("../assets/venus_lowpoly.obj", t1);
@@ -75,6 +77,7 @@ int main(){
     ALICE_TRACER::Scene scene;
     scene.addCamera(camera);
     scene.addLight(rectL);
+    scene.addLight(rectL2);
     scene.addHittable(rect0);
     scene.addHittable(rect1);
     scene.addHittable(rect2);
@@ -85,7 +88,7 @@ int main(){
 
     // integrator
 //    ALICE_TRACER::UniformIntegrator integrator{5, 50, 3};
-    ALICE_TRACER::NEEIntegrator integrator{5, 50, 5};
+    ALICE_TRACER::NEEIntegrator integrator{500, 50, 5};
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
     texture.loadGPUTexture(&result_image);
