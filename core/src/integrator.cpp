@@ -176,10 +176,13 @@ namespace ALICE_TRACER{
                     return;
                 // --------------------- direct --------------------------
                 Ray direct_ray;
-                float pdf_light = LightSampler::sampleLight(scene, hit_res, direct_ray);
-                AVec3 direct_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                direct_ray.dir_, hit_res.mtl_);
-                Color direct = direct_bxdf / pdf_light * direct_ray.color_.ToVec3() / RussianRoulette::prob();
+                Color direct;
+                float pdf_light = LightSampler::sampleRandomLight(scene, hit_res, direct_ray);
+                if(pdf_light > MIN_THRESHOLD) { //  pdf
+                    AVec3 direct_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
+                                                                    direct_ray.dir_, hit_res.mtl_);
+                    direct = direct_bxdf / pdf_light * direct_ray.color_.ToVec3() / RussianRoulette::prob();
+                }
 
                 // --------------------- indirect --------------------------
                 // step 1. generate the out ray from the hitting point
@@ -248,6 +251,15 @@ namespace ALICE_TRACER{
 
     }
 
+    float MISIntegrator::balanceHeuristic(float n1, float pdf1, float n2, float pdf2) {
+        return n1 * pdf1 / (n1 * pdf1 + n2 * pdf2);
+    }
+
+    float MISIntegrator::powerHeuristic(float n1, float pdf1, float n2, float pdf2) {
+        float f = n1 * pdf1, g = n2 * pdf2;
+        return f * f / (f * f + g * g);
+    }
+
     Color MISIntegrator::render(AVec2i pixel, AVec2i resolution, Scene *scene) {
         auto camera = scene->camera_;
         if(!camera){
@@ -277,6 +289,28 @@ namespace ALICE_TRACER{
         return pixel_col;
     }
 
+    Ray MISIntegrator::generateSampleRay(HitRes &hit_res) {
+        // query the material of the hittable instance, then generate a sample ray
+        Ray out_ray;
+        if(!hit_res.bxdf_) {
+            AliceLog::submitDebugLog("BxDF is null!!\n");
+            return out_ray;
+        }
+        // sampler the BxDF
+        AVec3 dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
+        if(AIsNan(dir)){
+            AliceLog::submitDebugLog("sampler dir is null!!\n");
+            return out_ray;
+        }
+        out_ray.start_ = hit_res.point_;
+        out_ray.dir_ = dir;
+        out_ray.time_ = 0.f;
+        out_ray.fm_t_ = hit_res.frame_time_;
+        out_ray.color_ = AVec3(0.f);
+
+        return out_ray;
+    }
+
     void MISIntegrator::traceRay(Scene *scene, Ray &in_ray, uint32_t iteration) {
         auto & cluster_list = scene->cluster_;
         auto & background_func = scene->background_func_;
@@ -286,13 +320,57 @@ namespace ALICE_TRACER{
             if(cluster_list)
                 cluster_list->CheckHittable(in_ray, hit_res);
             if (hit_res.is_hit_) {
+
+                if((max_num_iteration_ - iteration) == 0)
+                    in_ray.color_ = hit_res.mtl_->emit();
                 // if it is hit by some certain hittable instance
-                // query the emittance first
-                in_ray.color_ = hit_res.mtl_->emit();
-                if((max_num_iteration_ - iteration) >= min_num_iteration_ && RussianRoulette::isEnd())  // return if iteration is greater than the minimum iteration
+                if ((max_num_iteration_ - iteration) >= min_num_iteration_ && RussianRoulette::isEnd())  // return if iteration is greater than the minimum iteration
                     return;
-                // sample a direction
-                Ray sample_ray = generateSampleRay(scene, hit_res);
+
+                // step 1. randomly pick one light source
+                int32_t l_id = LightSampler::randomLight(scene);
+
+                Color result;
+                // -------------------- sample the light source -----------------------
+                {
+                    Ray light_ray;
+                    float pdf_light = LightSampler::sampleSingleLight(scene, l_id, hit_res, light_ray); // sample the selected light
+                    if (pdf_light > MIN_THRESHOLD) {
+                        // Given the light sample ray, compute the bxdf pdf
+                        float pdf_bxdf = hit_res.bxdf_->samplePDF(light_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                        // evaluate the light ray
+                        AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
+                                                                 light_ray.dir_, hit_res.mtl_);
+                        // compute the weight by the multiple importance sampling
+                        float weight = 1.f;
+                        is_balance_heuristic_ ? weight = balanceHeuristic(1.f, pdf_light, 1.f, pdf_bxdf)
+                                              : weight = powerHeuristic(1.f, pdf_light, 1.f, pdf_bxdf);
+                        result += bxdf * weight / pdf_light * light_ray.color_.ToVec3() / RussianRoulette::prob();
+                    }
+                }
+
+                // -------------------- sample the bxdf -----------------------
+                {
+                    Ray bxdf_ray = generateSampleRay(hit_res);
+                    float pdf_bxdf = hit_res.bxdf_->samplePDF(bxdf_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                    if (pdf_bxdf > MIN_THRESHOLD) {
+                        // Given the light sample ray, compute the bxdf pdf
+                        float pdf_light = LightSampler::samplePDF(scene, l_id, bxdf_ray);
+                        // track the ray
+                        traceRay(scene, bxdf_ray, iteration - 1);
+                        // evaluate the light ray
+                        AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
+                                                                 bxdf_ray.dir_, hit_res.mtl_);
+                        // compute the weight by the multiple importance sampling
+                        float weight = 1.f;
+                        is_balance_heuristic_ ? weight = balanceHeuristic(1.f, pdf_bxdf, 1.f, pdf_light)
+                                              : weight = powerHeuristic(1.f, pdf_bxdf, 1.f, pdf_light);
+                        result += bxdf * weight / pdf_bxdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
+                    }
+                }
+
+                // sum up all the effects
+                in_ray.color_ += result;
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox
@@ -305,39 +383,6 @@ namespace ALICE_TRACER{
                 }
             }
         }
-    }
-
-    Ray MISIntegrator::generateSampleRay(Scene * scene, HitRes &hit_res) {
-        // query the material of the hittable instance, then generate a sample ray
-        Ray out_ray;
-        if(!hit_res.bxdf_) {
-            AliceLog::submitDebugLog("BxDF is null!!\n");
-            return out_ray;
-        }
-
-        // During the multiple importance sampling process, we will pick one direction randomly, which can be bxdf sampling or light sampling.
-        // the balance heuristic method is applied here.
-        AVec3 dir;
-        int32_t sample_id = ALICE_TRACER::random_int(0, (int32_t)scene->lights_.size());
-        if(sample_id == scene->lights_.size()){
-            // sampler the BxDF
-            dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
-        }
-        else{
-
-        }
-
-        if(AIsNan(dir)){
-            AliceLog::submitDebugLog("sampler dir is null!!\n");
-            return out_ray;
-        }
-        out_ray.start_ = hit_res.point_;
-        out_ray.dir_ = dir;
-        out_ray.time_ = 0.f;
-        out_ray.fm_t_ = hit_res.frame_time_;
-        out_ray.color_ = AVec3(0.f);
-
-        return out_ray;
     }
 
 }

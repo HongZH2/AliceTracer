@@ -22,10 +22,13 @@ namespace ALICE_TRACER{
         float pdf_area = 1.f/(area.x * area.y);
         // compute pdf_omega = pdf_area * dist^2 / cos<on_light, light_normal>
         float cos_alpha = AClamp(ADot(AVec3(0.f, -1.f, 0.f), -l_dir));
+        float pdf_omega;
         if(cos_alpha < MIN_THRESHOLD){
-            pdf_omega = MIN_THRESHOLD;
+            pdf_omega = 0.f;
         }
-        float pdf_omega = pdf_area * dist2 / cos_alpha;
+        else{
+            pdf_omega = pdf_area * dist2 / cos_alpha;
+        }
 
         // generate the output ray
         out_ray.start_ = hit_res.point_;
@@ -37,21 +40,69 @@ namespace ALICE_TRACER{
         return pdf_omega;
     }
 
-    float LightSampler::sampleLight(Scene * scene, HitRes & hit_res, Ray & out_ray) {
-        // randomly pick a light // TODO
-        if(scene->lights_.empty()) return FLT_MAX;
-        int32_t light_id = ALICE_TRACER::random_int(0, (int32_t)scene->lights_.size()-1);
-        return sampleLight(scene, light_id, hit_res, out_ray);
+    float Sampler::samplePDFRectXZ(ALICE_TRACER::RectangleXZ *rect, ALICE_TRACER::HitRes &hit_res, ALICE_TRACER::Ray &ray) {
+        // query the center and area of the rectangle
+        AVec3 center = rect->center();
+        AVec2 area = rect->area();
+        // compute the distance between shading point and hit point
+        float dist = ALength(ray.start_ - hit_res.point_);
+        float cos_alpha = AClamp(ADot(AVec3(0.f, -1.f, 0.f), -ray.dir_));
+        float pdf_area = 1.f/(area.x * area.y);
+        float pdf_omega = 0.f;
+        if(cos_alpha < MIN_THRESHOLD){
+            pdf_omega = 0.f;
+        }
+        else{
+            pdf_omega = pdf_area * dist * dist / cos_alpha;
+        }
+        return pdf_omega;
     }
 
-    float LightSampler::sampleLight(ALICE_TRACER::Scene *scene, int32_t id, ALICE_TRACER::HitRes &hit_res,
+    float LightSampler::samplePDF(ALICE_TRACER::Scene *scene, int32_t id, ALICE_TRACER::Ray ray) {
+        if(id >= scene->lights_.size() || id < 0)
+            return 0.f;
+        // check the visibility
+        HitRes l_hit;
+        scene->cluster_->CheckHittable(ray, l_hit);
+        if(l_hit.is_hit_ && l_hit.uni_id_ == id){  // check if it is hit by the sample point
+            auto light = scene->lights_.at(id);
+            int32_t light_t = (int32_t) light.index();
+            switch (light_t) {
+                case 0: {
+                    RectangleXZ *rect = std::get<RectangleXZ *>(light);
+                    return Sampler::samplePDFRectXZ(rect, l_hit, ray);
+                }
+                default:
+                    break;
+            }
+        }
+        return 0.f;
+    }
+
+    int32_t LightSampler::randomLight(ALICE_TRACER::Scene *scene) {
+        // randomly pick a light
+        if(scene->lights_.empty()) return INT32_MIN;
+        return ALICE_TRACER::random_int(0, (int32_t)scene->lights_.size()-1);
+    }
+
+    float LightSampler::sampleRandomLight(Scene * scene, HitRes & hit_res, Ray & out_ray) {
+        // randomly pick a light // TODO
+        int32_t light_id = randomLight(scene);
+        return sampleSingleLight(scene, light_id, hit_res, out_ray);
+    }
+
+    float LightSampler::sampleSingleLight(ALICE_TRACER::Scene *scene, int32_t id, ALICE_TRACER::HitRes &hit_res,
                                     ALICE_TRACER::Ray &out_ray) {
+        if(id >= scene->lights_.size() || id < 0)
+            return 0.f;
         auto light = scene->lights_.at(id);
         int32_t light_t = (int32_t) light.index();
         switch (light_t) {
             case 0: {
                 RectangleXZ *rect = std::get<RectangleXZ *>(light);
                 float pdf = sampleRectangleXZ(rect, hit_res, out_ray);
+                if(pdf <= MIN_THRESHOLD) return 0.f;
+                // check the visibility
                 HitRes l_hit;
                 scene->cluster_->CheckHittable(out_ray, l_hit);
                 if(l_hit.is_hit_ && l_hit.uni_id_ == rect->id()){  // check if it is hit by the sample point

@@ -16,15 +16,17 @@ namespace ALICE_TRACER{
         Sampler() = default;
         ~Sampler() = default;
         static float sampleRectangleXZ(RectangleXZ *rect, HitRes &hit_res, Ray & out_ray);
-
+        static float samplePDFRectXZ(RectangleXZ *rect, HitRes &hit_res, Ray & ray);
     };
 
     class LightSampler:public Sampler{
     public:
         LightSampler() = default;
         ~LightSampler() = default;
-        static float sampleLight(Scene * scene, HitRes &hit_res, Ray & out_ray);
-        static float sampleLight(Scene * scene, int32_t id, HitRes &hit_res, Ray & out_ray);
+        static float samplePDF(Scene * scene, int32_t id, Ray ray);  // Given a sample ray, compute the pdf
+        static int32_t randomLight(Scene * scene); // randomly pick a light, return the light id
+        static float sampleRandomLight(Scene * scene, HitRes &hit_res, Ray & out_ray); // randomly pick a light, and compute the pdf and color
+        static float sampleSingleLight(Scene * scene, int32_t id, HitRes &hit_res, Ray & out_ray); //  Given an id of the light, compute the pdf and color
     };
 
 }

@@ -91,9 +91,13 @@ namespace ALICE_TRACER{
         MISIntegrator(uint32_t num_sample_per_pixel, uint32_t max_num_iteration, uint32_t min_num_iteration);
         ~MISIntegrator() = default;
         Color render(AVec2i pixel, AVec2i resolution, Scene * scene) override;
+
+        bool is_balance_heuristic_ = true;
     protected:
         void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
-        Ray generateSampleRay(Scene * scene, HitRes & hit_res);
+        Ray generateSampleRay(HitRes & hit_res);
+        static float balanceHeuristic(float n1, float pdf1, float n2, float pdf2);
+        static float powerHeuristic(float n1, float pdf1, float n2, float pdf2);
     };
 
 }
