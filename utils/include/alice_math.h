@@ -14,6 +14,7 @@
 #include "third_parties/glm/gtx/rotate_vector.hpp"
 #include "third_parties/glm/gtc/type_ptr.hpp"
 #include <cmath>
+
 namespace ALICE_UTILS {
     #define MIN_THRESHOLD 1e-4
     // vector

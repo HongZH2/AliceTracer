@@ -59,6 +59,12 @@ namespace ALICE_TRACER{
             HitRes hit_res;
             if(cluster_list)
                 cluster_list->CheckHittable(in_ray, hit_res);
+            // handle the exception
+            if(!hit_res.bxdf_ || !hit_res.mtl_) {
+                AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
+                return;
+            }
+
             if (hit_res.is_hit_) {
                 // if it is hit by some certain hittable instance
                 in_ray.color_ = hit_res.mtl_->emit();
@@ -66,27 +72,28 @@ namespace ALICE_TRACER{
                     return;
 
                 // step 1. generate the out ray from the hitting point
-                Ray out_ray = generateSampleRay(hit_res);
+                Ray out_ray;
+                float out_ray_pdf;
+                out_ray.start_ = hit_res.point_;
+                out_ray.time_ = 0.f;
+                out_ray.fm_t_ = hit_res.frame_time_;
+                out_ray.color_ = AVec3(0.f);
+                hit_res.bxdf_->sampleBxDF(out_ray.dir_, out_ray_pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
 
                 // step 2. trace the new ray
                 traceRay(scene, out_ray, iteration - 1);
 
                 // step 3. shading/evaluate the BxDF
                 // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
-                if(!hit_res.bxdf_ || !hit_res.mtl_) {
-                    AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
-                    return;
-                }
                 // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
                 AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
-                float pdf = hit_res.bxdf_->samplePDF(out_ray.dir_, hit_res.normal_, hit_res.mtl_);
                 if(AIsNan(bxdf)){
                     AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
                     return;
                 }
 
                 // step 4. evaluate the reflection with RussianRoulette
-                in_ray.color_ += bxdf / pdf * out_ray.color_.ToVec3()/ RussianRoulette::prob();
+                in_ray.color_ += bxdf / out_ray_pdf * out_ray.color_.ToVec3()/ RussianRoulette::prob();
 
             }
             else {
@@ -100,27 +107,6 @@ namespace ALICE_TRACER{
                 }
             }
         }
-    }
-
-    Ray UniformIntegrator::generateSampleRay(HitRes &hit_res) {
-        // query the material of the hittable instance, then generate a sample ray
-        Ray out_ray;
-        if(!hit_res.bxdf_) {
-            AliceLog::submitDebugLog("BxDF is null!!\n");
-            return out_ray;
-        }
-        AVec3 dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
-        if(AIsNan(dir)){
-            AliceLog::submitDebugLog("sampler dir is null!!\n");
-            return out_ray;
-        }
-        out_ray.start_ = hit_res.point_;
-        out_ray.dir_ = dir;
-        out_ray.time_ = 0.f;
-        out_ray.fm_t_ = hit_res.frame_time_;
-        out_ray.color_ = AVec3(0.f);
-
-        return out_ray;
     }
 
     // ---------------
@@ -186,7 +172,14 @@ namespace ALICE_TRACER{
 
                 // --------------------- indirect --------------------------
                 // step 1. generate the out ray from the hitting point
-                Ray out_ray = generateSampleRay(hit_res);
+                Ray out_ray;
+                float out_ray_pdf;
+                out_ray.start_ = hit_res.point_;
+                out_ray.time_ = 0.f;
+                out_ray.fm_t_ = hit_res.frame_time_;
+                out_ray.color_ = AVec3(0.f);
+                hit_res.bxdf_->sampleBxDF(out_ray.dir_, out_ray_pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
+
                 // step 2. trace the new ray
                 traceRay(scene, out_ray, iteration - 1);
                 // step 3. shading/evaluate the BxDF
@@ -196,14 +189,16 @@ namespace ALICE_TRACER{
                     return;
                 }
                 // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
+                Color indirect;
                 AVec3 indirect_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
-                float pdf = hit_res.bxdf_->samplePDF(out_ray.dir_, hit_res.normal_, hit_res.mtl_);
-                if(AIsNan(indirect_bxdf)){
-                    AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
-                    return;
+                if(out_ray_pdf > MIN_THRESHOLD) {
+                    if (AIsNan(indirect_bxdf)) {
+                        AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
+                        return;
+                    }
+                    // step 4. evaluate the reflection with RussianRoulette
+                    indirect = indirect_bxdf / out_ray_pdf * out_ray.color_.ToVec3() / RussianRoulette::prob();
                 }
-                // step 4. evaluate the reflection with RussianRoulette
-                Color indirect = indirect_bxdf / pdf * out_ray.color_.ToVec3()/ RussianRoulette::prob();
 
                 // combine the indirect and indirect light
                 in_ray.color_ += direct + indirect;
@@ -219,28 +214,6 @@ namespace ALICE_TRACER{
                 }
             }
         }
-    }
-
-    Ray NEEIntegrator::generateSampleRay(HitRes &hit_res) {
-        // query the material of the hittable instance, then generate a sample ray
-        Ray out_ray;
-        if(!hit_res.bxdf_) {
-            AliceLog::submitDebugLog("BxDF is null!!\n");
-            return out_ray;
-        }
-        // sampler the BxDF
-        AVec3 dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
-        if(AIsNan(dir)){
-            AliceLog::submitDebugLog("sampler dir is null!!\n");
-            return out_ray;
-        }
-        out_ray.start_ = hit_res.point_;
-        out_ray.dir_ = dir;
-        out_ray.time_ = 0.f;
-        out_ray.fm_t_ = hit_res.frame_time_;
-        out_ray.color_ = AVec3(0.f);
-
-        return out_ray;
     }
 
     // ---------------
@@ -289,26 +262,19 @@ namespace ALICE_TRACER{
         return pixel_col;
     }
 
-    Ray MISIntegrator::generateSampleRay(HitRes &hit_res) {
-        // query the material of the hittable instance, then generate a sample ray
-        Ray out_ray;
-        if(!hit_res.bxdf_) {
-            AliceLog::submitDebugLog("BxDF is null!!\n");
-            return out_ray;
-        }
+    void MISIntegrator::generateSampleRay(ALICE_TRACER::Ray &sample_ray, float &pdf, ALICE_TRACER::Ray &in_ray,
+                                          ALICE_TRACER::HitRes &hit_res) {
         // sampler the BxDF
-        AVec3 dir = hit_res.bxdf_->sampleBxDF(hit_res.point_, hit_res.normal_, hit_res.mtl_);
+        AVec3 dir;
+        hit_res.bxdf_->sampleBxDF(dir, pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
         if(AIsNan(dir)){
             AliceLog::submitDebugLog("sampler dir is null!!\n");
-            return out_ray;
         }
-        out_ray.start_ = hit_res.point_;
-        out_ray.dir_ = dir;
-        out_ray.time_ = 0.f;
-        out_ray.fm_t_ = hit_res.frame_time_;
-        out_ray.color_ = AVec3(0.f);
-
-        return out_ray;
+        sample_ray.start_ = hit_res.point_;
+        sample_ray.dir_ = dir;
+        sample_ray.time_ = 0.f;
+        sample_ray.fm_t_ = hit_res.frame_time_;
+        sample_ray.color_ = AVec3(0.f);
     }
 
     void MISIntegrator::traceRay(Scene *scene, Ray &in_ray, uint32_t iteration) {
@@ -337,7 +303,7 @@ namespace ALICE_TRACER{
                     float pdf_light = LightSampler::sampleSingleLight(scene, l_id, hit_res, light_ray); // sample the selected light
                     if (pdf_light > MIN_THRESHOLD) {
                         // Given the light sample ray, compute the bxdf pdf
-                        float pdf_bxdf = hit_res.bxdf_->samplePDF(light_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                        float pdf_bxdf = hit_res.bxdf_->samplePDF(light_ray.dir_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
                         // evaluate the light ray
                         AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
                                                                  light_ray.dir_, hit_res.mtl_);
@@ -351,21 +317,27 @@ namespace ALICE_TRACER{
 
                 // -------------------- sample the bxdf -----------------------
                 {
-                    Ray bxdf_ray = generateSampleRay(hit_res);
-                    float pdf_bxdf = hit_res.bxdf_->samplePDF(bxdf_ray.dir_, hit_res.normal_, hit_res.mtl_);
-                    if (pdf_bxdf > MIN_THRESHOLD) {
-                        // Given the light sample ray, compute the bxdf pdf
-                        float pdf_light = LightSampler::samplePDF(scene, l_id, bxdf_ray);
+                    Ray bxdf_ray;
+                    float bxdf_ray_pdf;
+                    generateSampleRay(bxdf_ray, bxdf_ray_pdf, in_ray, hit_res);
+                    if (bxdf_ray_pdf > MIN_THRESHOLD) {
                         // track the ray
                         traceRay(scene, bxdf_ray, iteration - 1);
                         // evaluate the light ray
                         AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
                                                                  bxdf_ray.dir_, hit_res.mtl_);
-                        // compute the weight by the multiple importance sampling
-                        float weight = 1.f;
-                        is_balance_heuristic_ ? weight = balanceHeuristic(1.f, pdf_bxdf, 1.f, pdf_light)
-                                              : weight = powerHeuristic(1.f, pdf_bxdf, 1.f, pdf_light);
-                        result += bxdf * weight / pdf_bxdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
+                        if (hit_res.mtl_->type() != MaterialType::SpecularMirror) {
+                            // Given the light sample ray, compute the bxdf pdf
+                            float pdf_light = LightSampler::samplePDF(scene, l_id, bxdf_ray);
+                            // compute the weight by the multiple importance sampling
+                            float weight;
+                            is_balance_heuristic_ ? weight = balanceHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light)
+                                                  : weight = powerHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light);
+                            result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
+                        }
+                        else{
+                            result += bxdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
+                        }
                     }
                 }
 

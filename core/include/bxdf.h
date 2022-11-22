@@ -18,22 +18,34 @@ namespace ALICE_TRACER{
          // evaluate the BxDF
         virtual AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) = 0;
         // sample the BxDF
-        virtual AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) = 0;
+        virtual void sampleBxDF(AVec3 & sample, float & pdf, AVec3 point, AVec3 in, AVec3 normal, Material * mtl) = 0;
         // compute the pdf of the sample direction
-        virtual float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) = 0;
+        virtual float samplePDF(AVec3 dir, AVec3 in, AVec3 normal, Material * mtl) = 0;
     };
 
-    /*
-    * Define the BRDF class
-     * brdf = cos<norm, light> * dw
-    */
+    // --------------------------------------
+    // Cosin weighted BRDF
+    // brdf = cos<norm, light> * dw
+    // --------------------------------------
     class CosinWeightedBRDF: public BxDFBase{
     public:
         CosinWeightedBRDF() = default;
         ~CosinWeightedBRDF() override = default;
         AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
-        AVec3 sampleBxDF(AVec3 point, AVec3 normal, Material * mtl) override;
-        float samplePDF(AVec3 dir, AVec3 normal, Material * mtl) override;
+        void sampleBxDF(AVec3 & sample, float & pdf, AVec3 point, AVec3 in, AVec3 normal, Material * mtl) override;
+        float samplePDF(AVec3 dir, AVec3 in, AVec3 normal, Material * mtl) override;
+    };
+
+    // --------------------------------------
+    // Perfect Mirrored BRDF
+    // --------------------------------------
+    class PerfectMirroredBRDF: public BxDFBase{
+    public:
+        PerfectMirroredBRDF() = default;
+        ~PerfectMirroredBRDF() override = default;
+        AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
+        void sampleBxDF(AVec3 & sample, float & pdf, AVec3 point, AVec3 in, AVec3 normal, Material * mtl) override;
+        float samplePDF(AVec3 dir, AVec3 in, AVec3 normal, Material * mtl) override;
     };
 
 

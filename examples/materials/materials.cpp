@@ -76,7 +76,7 @@ int main(){
     scene.buildBVH();
 
     // integrator
-    ALICE_TRACER::NEEIntegrator integrator{5, 50, 5};
+    ALICE_TRACER::MISIntegrator integrator{100, 50, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
