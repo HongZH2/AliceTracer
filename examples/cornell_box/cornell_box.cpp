@@ -72,9 +72,12 @@ int main(){
     ALICE_TRACER::MirroredMaterial mtl5{ AVec3(3.3f)};
     ALICE_TRACER::PerfectMirroredBRDF mirrored;
 
+    ALICE_TRACER::TransparentMaterial mtl6{ AVec3(3.3f), AVec3(0.f), AVec3(0.f), 1.f/1.333f};
+    ALICE_TRACER::PerfectRefractedBRDF refracted;
+
     ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -1.5f, 0.f), AVec3(1.5f), 0.f, AVec3(1.f, 0.f ,0.f), &mtl5, &mirrored};
     ALICE_TRACER::ModelLoader::loadModel("../assets/venus_lowpoly.obj", t1);
-    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(-1.f, -1.f, -1.f), 1.f, &mtl5, &mirrored};
+    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(-1.f, -1.f, -1.f), 1.f, &mtl6, &refracted};
 //    ALICE_TRACER::Sphere * sphere2 = new ALICE_TRACER::Sphere{AVec3(1.f, -1.f, -1.f), 1.f, &mtl5, &mirrored};
 
     // set up the scene

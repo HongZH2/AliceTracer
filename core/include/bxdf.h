@@ -48,6 +48,18 @@ namespace ALICE_TRACER{
         float samplePDF(AVec3 dir, AVec3 in, AVec3 normal, Material * mtl) override;
     };
 
+    // --------------------------------------
+    // Perfect Refracted BRDF
+    // --------------------------------------
+    class PerfectRefractedBRDF: public BxDFBase{
+    public:
+        PerfectRefractedBRDF() = default;
+        ~PerfectRefractedBRDF() override = default;
+        AVec3 evaluateBxDF(AVec3 point, AVec3 normal, AVec3 in, AVec3 out, Material * mtl) override;
+        void sampleBxDF(AVec3 & sample, float & pdf, AVec3 point, AVec3 in, AVec3 normal, Material * mtl) override;
+        float samplePDF(AVec3 dir, AVec3 in, AVec3 normal, Material * mtl) override;
+    };
+
 
 
 

@@ -8,13 +8,18 @@
 #include "color.h"
 
 namespace ALICE_TRACER{
-    enum class MaterialType{
-        Lambert,
-        Emit,
-        SpecularMirror,
-        SpecularTransparent,
-        Metal
+    enum MaterialType{
+        Lambert = 1 << 0,
+        Specular = 1 << 1,
+        Glossy = 1 << 2,
+        Reflective = 1 << 3,
+        Refractive = 1 << 4
     };
+
+    static bool isMatchMtlType(MaterialType t1, MaterialType t2){
+        return t1 & t2;
+    }
+
     // ---------------
     // -- Material -----
     // ---------------
@@ -37,7 +42,7 @@ namespace ALICE_TRACER{
     class EmitMaterial: public Material{
     public:
         EmitMaterial(AVec3 albedo, AVec3 emit): Material(albedo), emit_(emit){
-            mat_t_ = MaterialType::Emit;
+            mat_t_ = MaterialType::Lambert;
         }
         ~EmitMaterial() override = default;
         Color emit() override{ return emit_;}
@@ -51,7 +56,7 @@ namespace ALICE_TRACER{
     class MirroredMaterial: public Material{
     public:
         explicit MirroredMaterial(AVec3 albedo): Material(albedo){
-            mat_t_ = MaterialType::SpecularMirror;
+            mat_t_ = MaterialType::Specular;
         }
         ~MirroredMaterial() override = default;
     };
@@ -61,10 +66,17 @@ namespace ALICE_TRACER{
     // ---------------
     class TransparentMaterial: public Material{
     public:
-        explicit TransparentMaterial(AVec3 albedo): Material(albedo){
-            mat_t_ = MaterialType::SpecularTransparent;
+        explicit TransparentMaterial(AVec3 albedo, AVec3 f0, AVec3 f90, float eta):
+            Material(albedo), f0_(f0), f90_(f90), eta_(eta){
+            mat_t_ = MaterialType::Specular;
         }
         ~TransparentMaterial() override = default;
+        inline AVec3 f0(){return f0_;}
+        inline AVec3 f90(){return f90_;}
+        inline float eta(){return eta_;}
+    protected:
+        AVec3 f0_, f90_;
+        float eta_; // relative eta
     };
 
     // ---------------
@@ -74,7 +86,7 @@ namespace ALICE_TRACER{
     public:
         MetalMaterial(AVec3 albedo, AVec3 reflectance, float roughness, float metallic):
                 Material(albedo), reflectance_(reflectance), roughness_(roughness), metallic_(metallic){
-            mat_t_ = MaterialType::Metal;
+            mat_t_ = MaterialType::Glossy;
         }
         ~MetalMaterial() override = default;
 

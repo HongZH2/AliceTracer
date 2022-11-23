@@ -31,15 +31,18 @@ namespace ALICE_TRACER{
         uint32_t uni_id_ = INT_MAX;
         AVec3 point_;
         AVec3 normal_;
+        bool is_inside_ = false;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
 
         void setNormal(AVec3 norm, AVec3 ray_dir){  // adjust the normal
             if(ADot(norm, ray_dir) < -MIN_THRESHOLD){
                 normal_ = norm;
+                is_inside_ = false;
             }
             else{
                 normal_ = -norm;
+                is_inside_ = true;
             }
         }
     };

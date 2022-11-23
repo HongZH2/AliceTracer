@@ -79,6 +79,26 @@ namespace ALICE_TRACER{
         return 0.f;
     }
 
+    bool LightSampler::checkVisibility(ALICE_TRACER::Scene *scene, ALICE_TRACER::Ray ray) {
+        HitRes l_hit;
+        scene->cluster_->CheckHittable(ray, l_hit);  // check the visibility
+        for(int32_t id = 0 ; id < scene->lights_.size(); ++id){
+            Hittable * light = scene->getLight(id);
+            if(l_hit.is_hit_ && l_hit.uni_id_ == light->id())  // check if it is hit by the sample point
+                return true;
+        }
+        return false;
+    }
+
+    bool LightSampler::checkSingleVisibility(ALICE_TRACER::Scene *scene, int32_t id, ALICE_TRACER::Ray ray) {
+        Hittable * light = scene->getLight(id);
+        HitRes l_hit;
+        scene->cluster_->CheckHittable(ray, l_hit);  // check the visibility
+        if(l_hit.is_hit_ && l_hit.uni_id_ == light->id())  // check if it is hit by the sample point
+            return true;
+        return false;
+    }
+
     int32_t LightSampler::randomLight(ALICE_TRACER::Scene *scene) {
         // randomly pick a light
         if(scene->lights_.empty()) return INT32_MIN;

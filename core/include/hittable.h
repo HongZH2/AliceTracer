@@ -47,6 +47,8 @@ namespace ALICE_TRACER{
         inline uint32_t id(){return id_;}
         inline void setMaterial(Material* mtl){mtl_ = mtl;}
         inline void setBxdf(BxDFBase * bxdf){bxdf_ = bxdf;}
+        inline Material * mtl(){return mtl_;}
+        inline BxDFBase * bxdf(){return bxdf_;}
     protected:
         uint32_t id_; // unique id
         Material * mtl_ = nullptr;

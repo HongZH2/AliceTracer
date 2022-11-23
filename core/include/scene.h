@@ -28,6 +28,20 @@ namespace ALICE_TRACER{
             cluster_->addHittableInst(light);
             lights_.emplace_back(light);
         }
+
+        Hittable* getLight(int32_t id){
+            if(id >= lights_.size() || id < 0)
+                return nullptr;
+            auto light = lights_.at(id);
+            int32_t light_t = (int32_t) light.index();
+            switch (light_t) {
+                case 0: {
+                    return std::get<RectangleXZ *>(light);
+                }
+                default:
+                    return nullptr;
+            }
+        }
     public:
         Camera * camera_;
         ClusterList * cluster_;

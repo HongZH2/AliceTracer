@@ -23,6 +23,8 @@ namespace ALICE_TRACER{
     public:
         LightSampler() = default;
         ~LightSampler() = default;
+        static bool checkVisibility(Scene * scene, Ray ray);
+        static bool checkSingleVisibility(Scene * scene, int32_t id, Ray ray); // Check the visibility of the light
         static float samplePDF(Scene * scene, int32_t id, Ray ray);  // Given a sample ray, compute the pdf
         static int32_t randomLight(Scene * scene); // randomly pick a light, return the light id
         static float sampleRandomLight(Scene * scene, HitRes &hit_res, Ray & out_ray); // randomly pick a light, and compute the pdf and color

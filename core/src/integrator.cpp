@@ -321,12 +321,12 @@ namespace ALICE_TRACER{
                     float bxdf_ray_pdf;
                     generateSampleRay(bxdf_ray, bxdf_ray_pdf, in_ray, hit_res);
                     if (bxdf_ray_pdf > MIN_THRESHOLD) {
-                        // track the ray
-                        traceRay(scene, bxdf_ray, iteration - 1);
-                        // evaluate the light ray
-                        AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                 bxdf_ray.dir_, hit_res.mtl_);
-                        if (hit_res.mtl_->type() != MaterialType::SpecularMirror) {
+                        if (!isMatchMtlType(hit_res.mtl_->type(), MaterialType::Specular)) {
+                            // track the ray
+                            traceRay(scene, bxdf_ray, iteration - 1);
+                            // evaluate the light ray
+                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
+                                                                     bxdf_ray.dir_, hit_res.mtl_);
                             // Given the light sample ray, compute the bxdf pdf
                             float pdf_light = LightSampler::samplePDF(scene, l_id, bxdf_ray);
                             // compute the weight by the multiple importance sampling
@@ -334,8 +334,14 @@ namespace ALICE_TRACER{
                             is_balance_heuristic_ ? weight = balanceHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light)
                                                   : weight = powerHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light);
                             result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
-                        }
-                        else{
+                        } else {
+                            if(LightSampler::checkVisibility(scene, bxdf_ray))
+                                bxdf_ray.color_ += scene->getLight(l_id)->mtl()->emit();
+                            // track the ray
+                            traceRay(scene, bxdf_ray, iteration - 1);
+                            // evaluate the light ray
+                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
+                                                                     bxdf_ray.dir_, hit_res.mtl_);
                             result += bxdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
                         }
                     }
