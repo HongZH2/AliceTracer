@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(Primitives)
+project(WhiteRoom)
 
 ###############
 # Third Parties
@@ -33,7 +33,7 @@ include_directories(
         ${OPENGL_INCLUDE_DIR}
 )
 
-add_executable(${PROJECT_NAME} primitives.cpp ${IMGUI_SRC})
+add_executable(${PROJECT_NAME} white_room.cpp ${IMGUI_SRC})
 
 if(APPLE)
         #assimp

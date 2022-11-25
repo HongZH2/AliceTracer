@@ -248,7 +248,8 @@ namespace ALICE_TRACER{
         }
         pixel_col /= (float)num_sampler_per_pixel_; // average the results
         // Tone Mapping
-//        pixel_col = ACESFilm(pixel_col);
+        pixel_col = ACESFilm(pixel_col);
+//        pixel_col = Reinhard(pixel_col);
         // transfer linear space to gamma space
         pixel_col = toGammaSpace(pixel_col);
 
