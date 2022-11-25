@@ -55,7 +55,8 @@ namespace ALICE_TRACER{
     // ---------------
     class MirroredMaterial: public Material{
     public:
-        explicit MirroredMaterial(AVec3 albedo): Material(albedo){
+        explicit MirroredMaterial(AVec3 albedo):
+                Material(albedo){
             mat_t_ = MaterialType::Specular;
         }
         ~MirroredMaterial() override = default;
@@ -64,40 +65,50 @@ namespace ALICE_TRACER{
     // ---------------
     // -- Perfect Transparent Material -----
     // ---------------
-    class TransparentMaterial: public Material{
+    class FresnelMaterial: public Material{
     public:
-        explicit TransparentMaterial(AVec3 albedo, AVec3 f0, AVec3 f90, float eta):
-            Material(albedo), f0_(f0), f90_(f90), eta_(eta){
+        explicit FresnelMaterial(AVec3 albedo, float eta0, float eta1):
+                Material(albedo), eta0_(eta0), eta1_(eta1){
             mat_t_ = MaterialType::Specular;
         }
-        ~TransparentMaterial() override = default;
-        inline AVec3 f0(){return f0_;}
-        inline AVec3 f90(){return f90_;}
-        inline float eta(){return eta_;}
+        ~FresnelMaterial() override = default;
+        inline float eta0() const{return eta0_;}
+        inline float eta1() const{return eta1_;}
     protected:
-        AVec3 f0_, f90_;
-        float eta_; // relative eta
+        float eta0_, eta1_; // outside, inside
+    };
+
+
+    // ---------------
+    // -- Perfect Mirrored/Transparent Material -----
+    // ---------------
+    class FresnelSpecularMaterial: public FresnelMaterial{
+    public:
+        explicit FresnelSpecularMaterial(AVec3 albedo, float eta0, float eta1):
+                FresnelMaterial(albedo, eta0, eta1){
+            mat_t_ = MaterialType::Specular;
+        }
+        ~FresnelSpecularMaterial() override = default;
     };
 
     // ---------------
-    // -- Metal Material -----
+    // -- Metal Material
+    // -- Cook Torrance Model
     // ---------------
     class MetalMaterial: public Material{
     public:
-        MetalMaterial(AVec3 albedo, AVec3 reflectance, float roughness, float metallic):
-                Material(albedo), reflectance_(reflectance), roughness_(roughness), metallic_(metallic){
+        MetalMaterial(AVec3 albedo, AVec3 reflectance, float roughness):
+                Material(albedo), reflectance_(reflectance), roughness_(roughness){
             mat_t_ = MaterialType::Glossy;
+//            roughness < 0.0001？ roughness
         }
         ~MetalMaterial() override = default;
 
-        inline Color reflectance(){return reflectance_;}
         inline float roughness(){return roughness_;}
-        inline float metallic(){return metallic_;}
-
+        inline AVec3 reflectance(){return reflectance_;}
     protected:
-        Color reflectance_;
+        AVec3 reflectance_;
         float roughness_;
-        float metallic_;
     };
 
 }

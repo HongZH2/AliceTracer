@@ -25,7 +25,10 @@ namespace ALICE_TRACER{
     // -----------------------------
     // -- Tone Mapping ---
     // -----------------------------
-
+    Color ACESFilm(Color & col){
+        AVec3 x = col.ToVec3();
+        return AClamp((x * (x * 2.51f + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f), AVec3(0.f), AVec3(1.f));
+    }
 
 
 

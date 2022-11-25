@@ -36,6 +36,7 @@ namespace ALICE_TRACER{
         out_ray.time_ = 0.f;
         out_ray.fm_t_ = hit_res.frame_time_;
         out_ray.color_ = AVec3(0.f);
+        out_ray.ray_t_ = ShadowRay;
 
         return pdf_omega;
     }
@@ -135,5 +136,6 @@ namespace ALICE_TRACER{
         }
         return 1.f;
     }
+
 
 }

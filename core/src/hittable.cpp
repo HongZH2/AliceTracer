@@ -145,6 +145,19 @@ namespace ALICE_TRACER{
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;
             }
+            else{
+                if(t2 < ray.t_max_ && t2 > ray.t_min_) {
+                    ray.t_max_ = t2;
+                    hit_res.uni_id_ = id_;
+                    hit_res.is_hit_ = true;
+                    hit_res.mtl_ = mtl_;
+                    hit_res.bxdf_ = bxdf_;
+                    hit_res.point_ = ray.start_ + ray.dir_ * t2;
+                    hit_res.setNormal(ANormalize(hit_res.point_ - c_center), ray.dir_);
+                    hit_res.frame_time_ = ray.fm_t_;
+                    return true;
+                }
+            }
         }
         return false;
     }

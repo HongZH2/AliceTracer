@@ -200,6 +200,13 @@ namespace ALICE_TRACER{
         time /= -M;
         if(beta > 0.f && lambda > 0.f && beta + lambda < 1.f){
             if(time < ray.t_max_ && time > ray.t_min_) {
+
+                // compute the normals
+                AVec3 n1 = *(normal_ + idx_[0]);
+                AVec3 n2 = *(normal_ + idx_[1]);
+                AVec3 n3 = *(normal_ + idx_[2]);
+                norm = ANormalize(n2 * beta + n3 * lambda + n1 * (1.f - beta - lambda));
+
                 ray.t_max_ = time;
                 hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;

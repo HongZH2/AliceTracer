@@ -17,7 +17,6 @@ namespace ALICE_TRACER{
                                                         aiProcess_OptimizeMeshes |
                                                         aiProcess_OptimizeGraph|
                                                         aiProcess_FixInfacingNormals|
-                                                        aiProcess_GenNormals|
                                                         aiProcess_OptimizeMeshes);
         if (!model || !mesh) {
             AliceLog::submitInfoLog("Fail to load the model\n");
@@ -36,6 +35,12 @@ namespace ALICE_TRACER{
                     vertex.y = model->mMeshes[i]->mVertices[j].y;
                     vertex.z = model->mMeshes[i]->mVertices[j].z;
                     triangle_mesh->vertices_.push_back(mesh->scale() * (mesh->rot() * vertex) + mesh->offset());
+
+                    AVec3 normal;
+                    normal.x = model->mMeshes[i]->mNormals[j].x;
+                    normal.y = model->mMeshes[i]->mNormals[j].y;
+                    normal.z = model->mMeshes[i]->mNormals[j].z;
+                    triangle_mesh->normal_.push_back(mesh->scale() * (mesh->rot() * normal));
                 }
 
                 // indices

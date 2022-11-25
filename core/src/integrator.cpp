@@ -44,7 +44,8 @@ namespace ALICE_TRACER{
             pixel_col += cam_ray.color_;
         }
         pixel_col /= (float)num_sampler_per_pixel_; // average the results
-
+        // Tone Mapping
+//        pixel_col = ACESFilm(pixel_col);
         // transfer linear space to gamma space
         pixel_col = toGammaSpace(pixel_col);
 
@@ -59,13 +60,12 @@ namespace ALICE_TRACER{
             HitRes hit_res;
             if(cluster_list)
                 cluster_list->CheckHittable(in_ray, hit_res);
-            // handle the exception
-            if(!hit_res.bxdf_ || !hit_res.mtl_) {
-                AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
-                return;
-            }
-
             if (hit_res.is_hit_) {
+                // handle the exception
+                if(!hit_res.bxdf_ || !hit_res.mtl_) {
+                    AliceLog::submitDebugLog("the BxDF or material of hittable instance is undefined!!\n");
+                    return;
+                }
                 // if it is hit by some certain hittable instance
                 in_ray.color_ = hit_res.mtl_->emit();
                 if((max_num_iteration_ - iteration) >= min_num_iteration_ && RussianRoulette::isEnd())  // return if iteration is greater than the minimum iteration
@@ -74,11 +74,7 @@ namespace ALICE_TRACER{
                 // step 1. generate the out ray from the hitting point
                 Ray out_ray;
                 float out_ray_pdf;
-                out_ray.start_ = hit_res.point_;
-                out_ray.time_ = 0.f;
-                out_ray.fm_t_ = hit_res.frame_time_;
-                out_ray.color_ = AVec3(0.f);
-                hit_res.bxdf_->sampleBxDF(out_ray.dir_, out_ray_pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                hit_res.bxdf_->sampleBxDF(out_ray, out_ray_pdf, hit_res, in_ray);
 
                 // step 2. trace the new ray
                 traceRay(scene, out_ray, iteration - 1);
@@ -86,11 +82,11 @@ namespace ALICE_TRACER{
                 // step 3. shading/evaluate the BxDF
                 // evaluate the reflection/transmission equation, or a general scattering equation by the material of the instance
                 // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
-                AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
-                if(AIsNan(bxdf)){
-                    AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
-                    return;
-                }
+                AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, out_ray);
+//                if(AIsNan(bxdf)){
+//                    assert("BxDF evaluation is null!!\n");
+//                    return;
+//                }
 
                 // step 4. evaluate the reflection with RussianRoulette
                 in_ray.color_ += bxdf / out_ray_pdf * out_ray.color_.ToVec3()/ RussianRoulette::prob();
@@ -139,7 +135,8 @@ namespace ALICE_TRACER{
             pixel_col += cam_ray.color_;
         }
         pixel_col /= (float)num_sampler_per_pixel_; // average the results
-
+        // Tone Mapping
+//        pixel_col = ACESFilm(pixel_col);
         // transfer linear space to gamma space
         pixel_col = toGammaSpace(pixel_col);
 
@@ -165,8 +162,7 @@ namespace ALICE_TRACER{
                 Color direct;
                 float pdf_light = LightSampler::sampleRandomLight(scene, hit_res, direct_ray);
                 if(pdf_light > MIN_THRESHOLD) { //  pdf
-                    AVec3 direct_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                    direct_ray.dir_, hit_res.mtl_);
+                    AVec3 direct_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, direct_ray);
                     direct = direct_bxdf / pdf_light * direct_ray.color_.ToVec3() / RussianRoulette::prob();
                 }
 
@@ -174,11 +170,7 @@ namespace ALICE_TRACER{
                 // step 1. generate the out ray from the hitting point
                 Ray out_ray;
                 float out_ray_pdf;
-                out_ray.start_ = hit_res.point_;
-                out_ray.time_ = 0.f;
-                out_ray.fm_t_ = hit_res.frame_time_;
-                out_ray.color_ = AVec3(0.f);
-                hit_res.bxdf_->sampleBxDF(out_ray.dir_, out_ray_pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
+                hit_res.bxdf_->sampleBxDF(out_ray, out_ray_pdf, hit_res, in_ray);
 
                 // step 2. trace the new ray
                 traceRay(scene, out_ray, iteration - 1);
@@ -190,7 +182,7 @@ namespace ALICE_TRACER{
                 }
                 // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
                 Color indirect;
-                AVec3 indirect_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_, out_ray.dir_, hit_res.mtl_);
+                AVec3 indirect_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, out_ray);
                 if(out_ray_pdf > MIN_THRESHOLD) {
                     if (AIsNan(indirect_bxdf)) {
                         AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
@@ -255,26 +247,12 @@ namespace ALICE_TRACER{
             pixel_col += cam_ray.color_;
         }
         pixel_col /= (float)num_sampler_per_pixel_; // average the results
-
+        // Tone Mapping
+//        pixel_col = ACESFilm(pixel_col);
         // transfer linear space to gamma space
         pixel_col = toGammaSpace(pixel_col);
 
         return pixel_col;
-    }
-
-    void MISIntegrator::generateSampleRay(ALICE_TRACER::Ray &sample_ray, float &pdf, ALICE_TRACER::Ray &in_ray,
-                                          ALICE_TRACER::HitRes &hit_res) {
-        // sampler the BxDF
-        AVec3 dir;
-        hit_res.bxdf_->sampleBxDF(dir, pdf, hit_res.point_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
-        if(AIsNan(dir)){
-            AliceLog::submitDebugLog("sampler dir is null!!\n");
-        }
-        sample_ray.start_ = hit_res.point_;
-        sample_ray.dir_ = dir;
-        sample_ray.time_ = 0.f;
-        sample_ray.fm_t_ = hit_res.frame_time_;
-        sample_ray.color_ = AVec3(0.f);
     }
 
     void MISIntegrator::traceRay(Scene *scene, Ray &in_ray, uint32_t iteration) {
@@ -303,15 +281,16 @@ namespace ALICE_TRACER{
                     float pdf_light = LightSampler::sampleSingleLight(scene, l_id, hit_res, light_ray); // sample the selected light
                     if (pdf_light > MIN_THRESHOLD) {
                         // Given the light sample ray, compute the bxdf pdf
-                        float pdf_bxdf = hit_res.bxdf_->samplePDF(light_ray.dir_, in_ray.dir_, hit_res.normal_, hit_res.mtl_);
-                        // evaluate the light ray
-                        AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                 light_ray.dir_, hit_res.mtl_);
-                        // compute the weight by the multiple importance sampling
-                        float weight = 1.f;
-                        is_balance_heuristic_ ? weight = balanceHeuristic(1.f, pdf_light, 1.f, pdf_bxdf)
-                                              : weight = powerHeuristic(1.f, pdf_light, 1.f, pdf_bxdf);
-                        result += bxdf * weight / pdf_light * light_ray.color_.ToVec3() / RussianRoulette::prob();
+                        float pdf_bxdf = hit_res.bxdf_->samplePDF(hit_res, in_ray, light_ray);
+                        if(pdf_bxdf > MIN_THRESHOLD) {
+                            // evaluate the light ray
+                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, light_ray);
+                            // compute the weight by the multiple importance sampling
+                            float weight = 1.f;
+                            is_balance_heuristic_ ? weight = balanceHeuristic(1.f, pdf_light, 1.f, pdf_bxdf)
+                                                  : weight = powerHeuristic(1.f, pdf_light, 1.f, pdf_bxdf);
+                            result += bxdf * weight / pdf_light * light_ray.color_.ToVec3() / RussianRoulette::prob();
+                        }
                     }
                 }
 
@@ -319,14 +298,13 @@ namespace ALICE_TRACER{
                 {
                     Ray bxdf_ray;
                     float bxdf_ray_pdf;
-                    generateSampleRay(bxdf_ray, bxdf_ray_pdf, in_ray, hit_res);
+                    hit_res.bxdf_->sampleBxDF(bxdf_ray, bxdf_ray_pdf, hit_res, in_ray);
                     if (bxdf_ray_pdf > MIN_THRESHOLD) {
                         if (!isMatchMtlType(hit_res.mtl_->type(), MaterialType::Specular)) {
                             // track the ray
                             traceRay(scene, bxdf_ray, iteration - 1);
                             // evaluate the light ray
-                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                     bxdf_ray.dir_, hit_res.mtl_);
+                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, bxdf_ray);
                             // Given the light sample ray, compute the bxdf pdf
                             float pdf_light = LightSampler::samplePDF(scene, l_id, bxdf_ray);
                             // compute the weight by the multiple importance sampling
@@ -340,15 +318,14 @@ namespace ALICE_TRACER{
                             // track the ray
                             traceRay(scene, bxdf_ray, iteration - 1);
                             // evaluate the light ray
-                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res.point_, hit_res.normal_, in_ray.dir_,
-                                                                     bxdf_ray.dir_, hit_res.mtl_);
+                            AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, bxdf_ray);
                             result += bxdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
                         }
                     }
                 }
 
                 // sum up all the effects
-                in_ray.color_ += result;
+                in_ray.color_  += result;
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox

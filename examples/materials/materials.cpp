@@ -60,7 +60,24 @@ int main(){
     // material sphere
     ALICE_TRACER::Material mtl1{AVec3(0.02f)};
     ALICE_TRACER::Material mtl2{AVec3(0.3f, 0.3f, 0.f)};
-    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, 0.f), AVec3(100.0f), 0.f, AVec3(0.f, 1.f ,0.f), &mtl2, &lambert};
+    ALICE_TRACER::MirroredMaterial mtl4{AVec3(1.0f)};
+    ALICE_TRACER::FresnelMaterial mtl5{AVec3(1.0f), 1.f, 1.5f};
+    ALICE_TRACER::FresnelSpecularMaterial mtl6{AVec3(1.0f), 1.f, 1.5f};
+    ALICE_TRACER::PerfectMirroredBRDF mirrored;
+    ALICE_TRACER::PerfectRefractedBRDF refracted;
+    ALICE_TRACER::DielectricSpecularBSDF dielectric;
+
+    ALICE_TRACER::MetalMaterial mtl8{AVec3(1.f), AVec3(1.f, 0.782f, 0.344f), 0.01f};
+    ALICE_TRACER::MetalBRDF metal;
+    // sphere
+//    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &mtl8, &metal};
+
+    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, 0.f),
+                                                                             AVec3(100.f),
+                                                                             0.f,
+                                                                             AVec3(0.f, 1.f ,0.f),
+                                                                             &mtl8,
+                                                                             &metal};
     ALICE_TRACER::ModelLoader::loadModel("../assets/material_sphere/material_sphere.fbx", t1);
     t1->setTriangleMaterial(0, &mtl1, &lambert);
 
@@ -73,10 +90,11 @@ int main(){
     scene.addCamera(camera);
     scene.addHittable(rect0);
     scene.addHittable(t1);
+//    scene.addHittable(sphere);
     scene.buildBVH();
 
     // integrator
-    ALICE_TRACER::MISIntegrator integrator{100, 50, 5};
+    ALICE_TRACER::MISIntegrator integrator{5, 50, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;

@@ -16,7 +16,6 @@
 #include <cmath>
 
 namespace ALICE_UTILS {
-    #define MIN_THRESHOLD 1e-4
     // vector
     typedef glm::vec3 AVec3;
     typedef glm::vec2 AVec2;

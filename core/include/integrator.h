@@ -93,7 +93,6 @@ namespace ALICE_TRACER{
         bool is_balance_heuristic_ = true;
     protected:
         void traceRay(Scene * scene, Ray & in_ray, uint32_t iteration);        // to trace any ray
-        void generateSampleRay(Ray & sample_ray, float & pdf, Ray & in_ray, HitRes & hit_res);
         static float balanceHeuristic(float n1, float pdf1, float n2, float pdf2);
         static float powerHeuristic(float n1, float pdf1, float n2, float pdf2);
     };

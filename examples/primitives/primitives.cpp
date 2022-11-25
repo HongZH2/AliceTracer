@@ -58,14 +58,17 @@ int main(){
 
     // bxdf
     ALICE_TRACER::CosinWeightedBRDF lambert;
-    ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 0.3f, &mtl1, &lambert};
+    ALICE_TRACER::Sphere * sphere1 = new ALICE_TRACER::Sphere{AVec3(1.f, -0.3f, 0.f), 5.f, &mtl1, &lambert};
     ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(2.f, -0.3f, 0.f), AVec3(0.6f), &mtl2, &lambert};
     ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(0.f, -0.6f, 0.f), AVec2(8.f, 6.f), &mtl3, &lambert};
 
-    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, -1.f), AVec3(100.0f), 0.f, AVec3(0.f, 1.f ,0.f), &mtl3, &lambert};
-//    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
-    ALICE_TRACER::ModelLoader::loadModel("../assets/material_sphere/material_sphere.fbx", t1);
-    t1->setTriangleMaterial(0, &mtl1, &lambert);
+//    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, -1.f), AVec3(100.0f), 0.f, AVec3(0.f, 1.f ,0.f), &mtl3, &lambert};
+    ALICE_TRACER::EmitMaterial mtl5{AVec3(1.f), AVec3(10.f)};
+    ALICE_TRACER::RectangleXZ * rectL = new ALICE_TRACER::RectangleXZ{AVec3(1.f, 1.98f, 0.f), AVec3(1.f), &mtl5, &lambert};
+
+    //    ALICE_TRACER::TriangleMesh * t1 = new ALICE_TRACER::TriangleMesh{&mtl3, &lambert};
+//    ALICE_TRACER::ModelLoader::loadModel("../assets/material_sphere/material_sphere.fbx", t1);
+//    t1->setTriangleMaterial(0, &mtl1, &lambert);
 
     // set up the scene
     ALICE_TRACER::Scene scene;
@@ -75,13 +78,14 @@ int main(){
     });
     scene.addCamera(camera);
     scene.addHittable(sphere1);
-    scene.addHittable(rect1);
+//    scene.addHittable(rect1);
     scene.addHittable(rect0);
-    scene.addHittable(t1);
+    scene.addLight(rectL);
+//    scene.addHittable(t1);
     scene.buildBVH();
 
     // integrator
-    ALICE_TRACER::NEEIntegrator integrator{5, 50, 5};
+    ALICE_TRACER::MISIntegrator integrator{5, 50, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
