@@ -46,10 +46,11 @@ file(GLOB ALICE_TRACER_SRC
         ${ALICE_TRACER_ROOT}/core/src/*.cpp
         ${ALICE_TRACER_ROOT}/interface/src/*.cpp)
 
+#file(GLOB STB_IMAGE_SRC ${ALICE_TRACER_ROOT}/third_parties/stb_image/*)
 
 add_library(${PROJECT_NAME}
-        ${ALICE_TRACER_SRC}
-        )
+        ${ALICE_TRACER_SRC})
+#        ${STB_IMAGE_SRC})
 
 
 target_link_libraries(

@@ -6,6 +6,7 @@
 #define ALICE_TRACER_MATERIAL_H
 
 #include "color.h"
+#include "image.h"
 
 namespace ALICE_TRACER{
     enum MaterialType{
@@ -25,11 +26,12 @@ namespace ALICE_TRACER{
     // ---------------
     class Material {
     public:
+        Material() = default;
         explicit Material(AVec3 albedo): albedo_(albedo){}
         virtual ~Material() = default;
 
         virtual Color emit(){ return AVec3(0.f);}
-        inline Color albedo(){return albedo_;}
+        virtual Color albedo(){return albedo_;}
         inline MaterialType type(){return mat_t_;}
     protected:
         MaterialType mat_t_ = MaterialType::Lambert;
@@ -109,6 +111,19 @@ namespace ALICE_TRACER{
     protected:
         AVec3 reflectance_;
         float roughness_;
+    };
+
+    // ---------------
+    // -- Diffuse Material
+    // ---------------
+    class DiffuseMaterial : public Material{
+    public:
+        explicit DiffuseMaterial(ImageBase * albedo);
+        virtual ~DiffuseMaterial() = default;
+        virtual Color albedo() override {return albedo_;}
+
+    protected:
+        ImageBase * albedo_tex_;
     };
 
 }

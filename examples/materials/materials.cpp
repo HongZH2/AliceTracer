@@ -36,7 +36,7 @@ int main(){
     widgets.initImGui();
 
     // generate an empty image
-    ALICE_TRACER::ImageRGB result_image{width, height};
+    ALICE_TRACER::ImageUByte result_image{ALICE_TRACER::ImageType::IMG_RGB_UByte, width, height, 3};
     AVec2i resolution{result_image.w(), result_image.h()};
 
     // define the camera in the scene
@@ -53,25 +53,23 @@ int main(){
 
     // set up the scene
     // Rectangle
-    ALICE_TRACER::CosinWeightedBRDF lambert;
-    ALICE_TRACER::Material mtl3{ AVec3(0.35f)};
-    ALICE_TRACER::RectangleXZ * rect0 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -0.59f, 0.f), AVec3(8.f), &mtl3, &lambert};
-
-    // material sphere
     ALICE_TRACER::Material mtl1{AVec3(0.02f)};
     ALICE_TRACER::Material mtl2{AVec3(0.3f, 0.3f, 0.f)};
+    ALICE_TRACER::Material mtl3{ AVec3(0.35f)};
     ALICE_TRACER::MirroredMaterial mtl4{AVec3(1.0f)};
     ALICE_TRACER::FresnelMaterial mtl5{AVec3(1.0f), 1.f, 1.5f};
     ALICE_TRACER::FresnelSpecularMaterial mtl6{AVec3(1.0f), 1.f, 1.5f};
+    ALICE_TRACER::MetalMaterial mtl8{AVec3(1.f), AVec3(1.f, 0.782f, 0.344f), 0.01f};
+
+    ALICE_TRACER::CosinWeightedBRDF lambert;
     ALICE_TRACER::PerfectMirroredBRDF mirrored;
     ALICE_TRACER::PerfectRefractedBRDF refracted;
     ALICE_TRACER::DielectricSpecularBSDF dielectric;
-
-    ALICE_TRACER::MetalMaterial mtl8{AVec3(1.f), AVec3(1.f, 0.782f, 0.344f), 0.01f};
     ALICE_TRACER::MetalBRDF metal;
-    // sphere
-//    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &mtl8, &metal};
 
+    // instances
+    ALICE_TRACER::RectangleXZ * rect0 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -0.59f, 0.f), AVec3(8.f), &mtl3, &lambert};
+    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &mtl8, &metal};
     ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, 0.f, 0.f),
                                                                              AVec3(100.f),
                                                                              0.f,
@@ -89,8 +87,8 @@ int main(){
     });
     scene.addCamera(camera);
     scene.addHittable(rect0);
-    scene.addHittable(t1);
-//    scene.addHittable(sphere);
+//    scene.addHittable(t1);
+    scene.addHittable(sphere);
     scene.buildBVH();
 
     // integrator

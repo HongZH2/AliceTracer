@@ -7,7 +7,9 @@
 
 namespace ALICE_TRACER{
 
-    // sample the rectangle light
+    // ---------------------------
+    // sampler
+    // ---------------------------
     float Sampler::sampleRectangleXZ(RectangleXZ *rect, HitRes &hit_res, Ray & out_ray) {
         AVec3 center = rect->center();
         AVec2 area = rect->area();
@@ -59,6 +61,9 @@ namespace ALICE_TRACER{
         return pdf_omega;
     }
 
+    // ---------------------------
+    // light sampler
+    // ---------------------------
     float LightSampler::samplePDF(ALICE_TRACER::Scene *scene, int32_t id, ALICE_TRACER::Ray ray) {
         if(id >= scene->lights_.size() || id < 0)
             return 0.f;
@@ -138,4 +143,32 @@ namespace ALICE_TRACER{
     }
 
 
+    // ---------------------------
+    // material sampler
+    // sample the texture image
+    // ---------------------------
+    AVec3 MaterialSampler::sampleRGB(ALICE_TRACER::ImageBase *img, ALICE_UTILS::AVec2 uv) {
+        auto t = img->type();
+        AVec3 rgb;
+        switch (t) {
+            case ImageType::IMG_RGB_UByte:{
+                auto img_rgb = dynamic_cast<ImageUByte *>(img);
+                if(img_rgb){
+                    uint32_t w0 = floor(img_rgb->w() * uv.x);
+                    uint32_t h0 = floor(img_rgb->h() * uv.y);
+                    uint32_t w1 = w0 + 1 >= img_rgb->w() ? w0 : w0 + 1;
+                    uint32_t h1 = h0 + 1 >= img_rgb->h() ? h0 : h0 + 1;
+                    AVec3 v1 = (*img_rgb)(w0, h0);
+                    AVec3 v2 = (*img_rgb)(w1, h0);
+                    AVec3 v3 = (*img_rgb)(w0, h1);
+                    AVec3 v4 = (*img_rgb)(w1, h1);
+                    rgb = bilinearInterpolate(v1, v2, v3, v4, uv);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        return rgb;
+    }
 }

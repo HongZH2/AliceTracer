@@ -10,7 +10,9 @@
 
 namespace ALICE_TRACER{
 
+    // ---------------------------
     // sampler
+    // ---------------------------
     class Sampler{
     public:
         Sampler() = default;
@@ -19,6 +21,9 @@ namespace ALICE_TRACER{
         static float samplePDFRectXZ(RectangleXZ *rect, HitRes &hit_res, Ray & ray);
     };
 
+    // ---------------------------
+    // light sampler
+    // ---------------------------
     class LightSampler:public Sampler{
     public:
         LightSampler() = default;
@@ -31,6 +36,25 @@ namespace ALICE_TRACER{
         static float sampleSingleLight(Scene * scene, int32_t id, HitRes &hit_res, Ray & out_ray); //  Given an id of the light, compute the pdf and color
     };
 
+    // ---------------------------
+    // material sampler
+    // sample the texture image
+    // ---------------------------
+    class MaterialSampler{
+    public:
+        MaterialSampler() = default;
+        ~MaterialSampler() = default;
+
+        template <typename T>
+        static T bilinearInterpolate(T v1, T v2, T v3, T v4, AVec2 uv){
+            T v12 = v1 * (1.f - uv.x) + v2 * uv.x;
+            T v34 = v1 * (1.f - uv.x) + v2 * uv.x;
+            T val = v12 * (1.f - uv.y) + v34 * uv.y;
+            return val;
+        }
+
+        static AVec3 sampleRGB(ImageBase * img, AVec2 uv);
+    };
 }
 
 
