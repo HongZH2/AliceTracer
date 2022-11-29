@@ -147,7 +147,7 @@ namespace ALICE_TRACER{
     // material sampler
     // sample the texture image
     // ---------------------------
-    AVec3 MaterialSampler::sampleRGB(ALICE_TRACER::ImageBase *img, ALICE_UTILS::AVec2 uv) {
+    AVec3 TextureSampler::accessTexture2D(ALICE_TRACER::ImageBase *img, ALICE_UTILS::AVec2 uv) {
         auto t = img->type();
         AVec3 rgb;
         switch (t) {
@@ -158,11 +158,12 @@ namespace ALICE_TRACER{
                     uint32_t h0 = floor(img_rgb->h() * uv.y);
                     uint32_t w1 = w0 + 1 >= img_rgb->w() ? w0 : w0 + 1;
                     uint32_t h1 = h0 + 1 >= img_rgb->h() ? h0 : h0 + 1;
-                    AVec3 v1 = (*img_rgb)(w0, h0);
-                    AVec3 v2 = (*img_rgb)(w1, h0);
-                    AVec3 v3 = (*img_rgb)(w0, h1);
-                    AVec3 v4 = (*img_rgb)(w1, h1);
+                    AVec3 v1 = (*img_rgb)(h0, w0)/256.f;
+                    AVec3 v2 = (*img_rgb)(h1, w0)/256.f;
+                    AVec3 v3 = (*img_rgb)(h0, w1)/256.f;
+                    AVec3 v4 = (*img_rgb)(h1, w1)/256.f;
                     rgb = bilinearInterpolate(v1, v2, v3, v4, uv);
+                    rgb = ALinearSpace(rgb);
                 }
                 break;
             }
@@ -171,4 +172,42 @@ namespace ALICE_TRACER{
         }
         return rgb;
     }
+
+    AVec3 TextureSampler::accessTexture3D(ALICE_TRACER::ImageBase *img, ALICE_UTILS::AVec3 dir) {
+        if(!img) return AVec3(0.f);
+        auto t = img->type();
+        AVec3 rgb;
+        AVec3 n_dir = ANormalize(dir);
+        if(t == ImageType::IMG_RGB_Float){
+            AVec3 up = AVec3(0.f, 1.f, 0.f);
+            AVec3 forward = AVec3(0.f, 0.f, 1.f);
+            AVec3 right = AVec3(1.f, 0.f, 0.f);
+            AVec2 uv;
+            float udotd = ADot(n_dir, up);
+            float theta = acos(udotd);
+            AVec3 dir_p = ANormalize(n_dir - udotd * up);
+            float phi = acos(ADot(dir_p, right));
+            if(ADot(dir_p, forward) > 0.f){
+                uv.x = 1.f - phi * M_1_PI / 2.f;
+            }
+            else{
+                uv.x = phi * M_1_PI / 2.f;
+            }
+            uv.y = theta * M_1_PI;
+
+            // sample the 2d texture
+            auto img_rgb = dynamic_cast<ImageFloat *>(img);
+            uint32_t w0 = floor(img_rgb->w() * uv.x);
+            uint32_t h0 = floor(img_rgb->h() * uv.y);
+            uint32_t w1 = w0 + 1 >= img_rgb->w() ? w0 : w0 + 1;
+            uint32_t h1 = h0 + 1 >= img_rgb->h() ? h0 : h0 + 1;
+            AVec3 v1 = (*img_rgb)(h0, w0);
+            AVec3 v2 = (*img_rgb)(h1, w0);
+            AVec3 v3 = (*img_rgb)(h0, w1);
+            AVec3 v4 = (*img_rgb)(h1, w1);
+            rgb = bilinearInterpolate(v1, v2, v3, v4, uv);
+        }
+        return rgb;
+    }
+
 }

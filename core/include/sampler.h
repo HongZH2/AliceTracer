@@ -28,6 +28,7 @@ namespace ALICE_TRACER{
     public:
         LightSampler() = default;
         ~LightSampler() = default;
+
         static bool checkVisibility(Scene * scene, Ray ray);
         static bool checkSingleVisibility(Scene * scene, int32_t id, Ray ray); // Check the visibility of the light
         static float samplePDF(Scene * scene, int32_t id, Ray ray);  // Given a sample ray, compute the pdf
@@ -40,10 +41,10 @@ namespace ALICE_TRACER{
     // material sampler
     // sample the texture image
     // ---------------------------
-    class MaterialSampler{
+    class TextureSampler{
     public:
-        MaterialSampler() = default;
-        ~MaterialSampler() = default;
+        TextureSampler() = default;
+        ~TextureSampler() = default;
 
         template <typename T>
         static T bilinearInterpolate(T v1, T v2, T v3, T v4, AVec2 uv){
@@ -53,7 +54,8 @@ namespace ALICE_TRACER{
             return val;
         }
 
-        static AVec3 sampleRGB(ImageBase * img, AVec2 uv);
+        static AVec3 accessTexture2D(ImageBase * img, AVec2 uv);
+        static AVec3 accessTexture3D(ImageBase * img, AVec3 dir); // Given a light probe(hdr) and direction, sample the Light probe
     };
 }
 

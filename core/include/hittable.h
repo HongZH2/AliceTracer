@@ -91,6 +91,7 @@ namespace ALICE_TRACER{
         inline AVec3 center(){return center_;}
         inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
@@ -112,6 +113,7 @@ namespace ALICE_TRACER{
         inline AVec3 center(){return center_;}
         inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
@@ -133,6 +135,7 @@ namespace ALICE_TRACER{
         inline AVec3 center(){return center_;}
         inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area

@@ -57,13 +57,16 @@ int main(){
     // bxdf
     ALICE_TRACER::CosinWeightedBRDF lambert;
 
+    ALICE_TRACER::ImageBase * img = ALICE_TRACER::ImagePool::loadRGB("checker", "../assets/images/colorful_grids.jpg");
+    ALICE_TRACER::DiffuseMaterial mtl9{img};
+
     // instances
     ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, -4.f), AVec2(8.f), &mtl3, &lambert};
     ALICE_TRACER::RectangleXY * rect5 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, 4.f), AVec2(8.f), &mtl3, &lambert};
     ALICE_TRACER::RectangleYZ * rect1 = new ALICE_TRACER::RectangleYZ{AVec3(3.5f, 0.f, 0.f), AVec2(8.f), &mtl1, &lambert};
     ALICE_TRACER::RectangleYZ * rect2 = new ALICE_TRACER::RectangleYZ{AVec3(-3.5f, 0.f, 0.f), AVec2(8.f), &mtl2, &lambert};
-    ALICE_TRACER::RectangleXZ * rect3 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 3.f, 0.f), AVec2(8.f), &mtl3, &lambert};
-    ALICE_TRACER::RectangleXZ * rect4 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -3.f, 0.f), AVec2(8.f), &mtl3, &lambert};
+    ALICE_TRACER::RectangleXZ * rect3 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, 3.f, 0.f), AVec2(8.f), &mtl9, &lambert};
+    ALICE_TRACER::RectangleXZ * rect4 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -3.f, 0.f), AVec2(8.f), &mtl9, &lambert};
 
     // light
     ALICE_TRACER::EmitMaterial mtl4{AVec3(1.f), AVec3(10.f)};
@@ -83,13 +86,13 @@ int main(){
     ALICE_TRACER::MetalMaterial mtl8{AVec3(1.f), AVec3(0.913f, 0.922f, 0.924f), 0.1f};
     ALICE_TRACER::MetalBRDF metal;
 
-    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -2.0f, -2.f),
-                                                                              AVec3(2.2f), 0.f,
-                                                                               AVec3(1.f, 0.f ,0.f),
-                                                                               &mtl8,
-                                                                              &metal};
-    ALICE_TRACER::ModelLoader::loadModel("../assets/venus_lowpoly.obj", t1);
-//    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, -2.f, -2.f), 0.8f, &mtl8, &metal};
+//    ALICE_TRACER::TriangleInstance * t1 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -2.0f, -2.f),
+//                                                                              AVec3(2.2f), 0.f,
+//                                                                               AVec3(1.f, 0.f ,0.f),
+//                                                                               &mtl8,
+//                                                                              &metal};
+//    ALICE_TRACER::ModelLoader::loadModel("../assets/venus_lowpoly.obj", t1);
+    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, -2.f, -2.f), 0.8f, &mtl8, &metal};
 
     // set up the scene
     ALICE_TRACER::Scene scene;
@@ -102,13 +105,13 @@ int main(){
     scene.addHittable(rect3);
     scene.addHittable(rect4);
     scene.addHittable(rect5);
-//    scene.addHittable(sphere);
-    scene.addHittable(t1);
+    scene.addHittable(sphere);
+//    scene.addHittable(t1);
     scene.buildBVH();
 
     // integrator
 //    ALICE_TRACER::UniformIntegrator integrator{5, 50, 3};
-    ALICE_TRACER::MISIntegrator integrator{100, 50, 5};
+    ALICE_TRACER::MISIntegrator integrator{5, 50, 5};
     // create a texture
     ALICE_TRACER::TextureBuffer texture;
     texture.loadGPUTexture(&result_image);

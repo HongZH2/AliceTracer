@@ -42,7 +42,17 @@ namespace ALICE_TRACER{
     AVec3 CosinWeightedBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                           const ALICE_TRACER::Ray &out) {
         // we take the cos<> term as the pdf, so that cos<> term in the render equation is cancelled.
-        return hit_res.mtl_->albedo().ToVec3() * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
+        if(hit_res.mtl_->type() & TextureMaterial){
+            auto t_mtl = dynamic_cast<DiffuseMaterial *>(hit_res.mtl_);
+            if(t_mtl){
+                ImageBase* img = t_mtl->albedoTexture();
+                AVec3 albedo = TextureSampler::accessTexture2D(img, hit_res.tex_coord_);// AVec3(hit_res.tex_coord_, 0.f); //MaterialSampler::sampleRGB(img, hit_res.tex_coord_);
+                return albedo * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
+            }
+        }
+        else{
+            return hit_res.mtl_->albedo().ToVec3() * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
+        }
     }
 
     void CosinWeightedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
@@ -328,18 +338,20 @@ namespace ALICE_TRACER{
 
         float ndoti = AClamp(ADot(normal, in_dir));
         float ndoto = AClamp(ADot(normal, out_dir));
-        float vdoth = AClamp(ADot(half, in_dir));
-        if(vdoth > MIN_THRESHOLD) {
-            // remap the roughness
-            AVec3 F = FresnelSchlick::FSchlick(f0, AVec3(1.f), vdoth);
-            float D = MicrofacetGGX::isotropicGGX(in_dir, out_dir, normal, roughness);
-            float G = MicrofacetGGX::HeightCorrectedSmith(ndoti, ndoto, roughness);
-
-            // bxdf = [F * D * G * / (4 * <n, i> * <n, o>)] * <n, o>
-            AVec3 bxdf = F * D * G / (4.f * ndoti);
-            return bxdf;
+        float idoth = AClamp(ADot(half, in_dir));
+//        float ldoth = AClamp(ADot(half, out_dir));
+        if(ndoto < MIN_THRESHOLD && idoth < MIN_THRESHOLD) {
+            return AVec3(1.f);
         }
-        return AVec3{0.f};
+        // remap the roughness
+        AVec3 F = FresnelSchlick::FSchlick(f0, AVec3(1.f), idoth);
+        float D = MicrofacetGGX::isotropicGGX(in_dir, out_dir, normal, roughness);
+        float G = MicrofacetGGX::HeightCorrectedSmith(ndoti, ndoto, roughness);
+
+        // bxdf = [F * D * G * / (4 * <n, i> * <n, o>)] * <n, o>
+        AVec3 bxdf = F * D * G / (4.f * ndoti);
+        return bxdf;
+
     }
 
     float MetalBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
@@ -352,6 +364,8 @@ namespace ALICE_TRACER{
         AVec3 in_dir = -ANormalize(in.dir_);
         AVec3 out_dir = ANormalize(out.dir_);
         AVec3 half = ANormalize(in_dir + out_dir);
+        float ndoti = AClamp(ADot(normal, in_dir));
+        float ndoto = AClamp(ADot(normal, out_dir));
         float ndoth = AClamp(ADot(normal, half));
         float idoth = AClamp(ADot(half, in_dir));
         float alpha = mtl->roughness();
@@ -362,7 +376,7 @@ namespace ALICE_TRACER{
             float pdf = pdf_h * ndoth / 4.f / idoth;
             return pdf;
         }
-        return 1.f;
+        return MIN_THRESHOLD;
     }
 
     void MetalBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,

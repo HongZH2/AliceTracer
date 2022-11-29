@@ -52,27 +52,31 @@ namespace ALICE_TRACER{
         }
     }
 
-    ImageBase * ImagePool::loadRGB(std::string & name, std::string & path){
+    ImageBase * ImagePool::loadRGB(const std::string & name, const std::string & path){
         ImagePool & pool = getInstance();
         int32_t w, h, c;
         uint8_t * buffer;
-        buffer = stbi_load(path.c_str(), &w, &h, &c, 3);
-        ImageBase * img = new ImageUByte(ImageType::IMG_RGB_UByte, w, h, c, 3, buffer);
+        buffer = stbi_load(path.c_str(), &w, &h, &c, 0);
+        if(!buffer) {
+            assert("Fail to load image!!!\n");
+            return nullptr;
+        }
+        ImageBase * img = new ImageUByte(ImageType::IMG_RGB_UByte, w, h, c, w * c, buffer);
         pool.pool_[name] = img;
         return img;
     };
 
-    ImageBase * ImagePool::loadHdr(std::string & name, std::string & path){
+    ImageBase * ImagePool::loadHdr(const std::string & name, const std::string & path){
         ImagePool & pool = getInstance();
         int32_t w, h, c;
-        uint8_t * buffer;
-        buffer = stbi_load(path.c_str(), &w, &h, &c, 3);
-        ImageBase * img = new ImageUByte(ImageType::IMG_RGB_Float, w, h, c, 3, buffer);
+        float * buffer;
+        buffer = stbi_loadf(path.c_str(), &w, &h, &c, 0);
+        ImageBase * img = new ImageFloat(ImageType::IMG_RGB_Float, w, h, c, w * c, buffer);
         pool.pool_[name] = img;
         return img;
     }
 
-    ImageBase *ImagePool::getImage(std::string &name) {
+    ImageBase *ImagePool::getImage(const std::string & name) {
         ImagePool & pool = getInstance();
         if(pool.pool_.find(name) != pool.pool_.end()){
             return pool.pool_.at(name);

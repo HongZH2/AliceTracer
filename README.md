@@ -4,17 +4,21 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 
 ### Features
 #### - Spatial Separation
-- Naive BVH
+- Naive Two-level BVH
 ####  - Integrator
 - Vanilla Monte Carlo 
 - Next Event Estimate
 - Multiple Importance Sampling
 #### - Materials
 - Lambert Diffuse
+- Perfect reflection/refraction
+- Microfacet Specular
 
 #### - Lights
 - Rectangle Area Lights
-
+#### - Texture
+- albedo texture
+- light probe (hdr)
 ### - TODO
 - More Materials
     - Disney Materials
@@ -24,8 +28,9 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 ### Showcases
 #### Monte Carlo for Path Tracing
 - Cornell Box
-![](showcases/two_nee_500spp.png)
-![](showcases/monkey3.png)
+- ![](showcases/material.png)
+- ![](showcases/cornel_box_albedo_texture.png)
+![](showcases/white_room_monkey_100spp.png)
 - Area Lighting
 ![](showcases/area_lights.png)
 - Lambert Sphere

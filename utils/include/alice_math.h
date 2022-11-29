@@ -33,6 +33,35 @@ namespace ALICE_UTILS {
     typedef glm::mat2x2 AMat2;
 
     // functions
+    template<typename T>
+    inline T AGrammaSpace(const T & val){
+        return glm::pow(val, T(1.f/2.2f));
+    }
+
+    template<typename T>
+    inline T ALinearSpace(const T & val){
+        return glm::pow(val, T(2.2f));
+    }
+
+    template <typename T>
+    inline bool AGreaterThanEqual(const T & v1, const T & v2){
+        auto res = glm::greaterThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(res[i])
+                return true;
+        }
+        return false;
+    }
+
+    template <typename T>
+    inline bool AGreaterThan(const T & v1, const T & v2){
+        auto res = glm::greaterThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(!res[i])
+                return false;
+        }
+        return true;
+    }
 
     template <typename T>
     inline decltype(auto) AIsNan(const T & vec){

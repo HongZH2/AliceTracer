@@ -95,9 +95,9 @@ namespace ALICE_TRACER{
             static ImagePool instance;
             return instance;
         }
-        static ImageBase * loadRGB(std::string & name, std::string & path);
-        static ImageBase * loadHdr(std::string & name, std::string & path);
-        static ImageBase * getImage(std::string & name);
+        static ImageBase * loadRGB(const std::string & name, const std::string & path);
+        static ImageBase * loadHdr(const std::string & name, const std::string & path);
+        static ImageBase * getImage(const std::string & name);
 
     private:
         ImagePool() = default;

@@ -43,6 +43,8 @@ namespace ALICE_TRACER{
         uint32_t uni_id_ = INT_MAX;
         AVec3 point_;
         AVec3 normal_;
+        AVec3 tangent_;
+        AVec2 tex_coord_;
         bool is_inside_ = false;
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;

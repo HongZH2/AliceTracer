@@ -24,8 +24,8 @@ int main(){
     // set the log level
     ALICE_TRACER::AliceLog::setLogLevel(ALICE_TRACER::AliceLogType::debug);
 
-    uint32_t width = 600u;
-    uint32_t height = 400u;
+    uint32_t width = 1200u;
+    uint32_t height = 800u;
     float w_h_ratio = (float)width/(float)height;
 
     // create a window
@@ -53,6 +53,9 @@ int main(){
     // material
     ALICE_TRACER::Material mtl1{AVec3(0.4f)};
     ALICE_TRACER::CosinWeightedBRDF lambert;
+
+//    ALICE_TRACER::ImageBase * img = ALICE_TRACER::ImagePool::loadRGB("checker", "../assets/images/colorful_grids.jpg");
+//    ALICE_TRACER::DiffuseMaterial mtl9{img};
 
     // instances
     ALICE_TRACER::RectangleXY * rect0 = new ALICE_TRACER::RectangleXY{AVec3(0.f, 0.f, -4.f), AVec2(8.f), &mtl1, &lambert};

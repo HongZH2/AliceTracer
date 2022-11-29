@@ -129,7 +129,7 @@ namespace ALICE_TRACER{
         float c = dot(oc, oc) - radius_ * radius_;
         float discriminant = b*b - 4.f * a * c;
         if (discriminant > MIN_THRESHOLD) {
-            float sqrt_d = sqrt(discriminant)/(2.f * a);
+            float sqrt_d = std::sqrt(discriminant)/(2.f * a);
             float b_part = - b / (2.f * a);
             float t1 = b_part - sqrt_d;
             float t2 = b_part + sqrt_d;  // TODO
@@ -183,6 +183,13 @@ namespace ALICE_TRACER{
         bound_->b_min_ = c_center - AVec3(area_/2.f, 0.f) - AVec3(AABB_PADDING);
         bound_->b_max_ = c_center + AVec3(area_/2.f, 0.f) + AVec3(AABB_PADDING);
         return bound_;
+    }
+
+    AVec2 RectangleXY::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.x - lb.x) / (rt.x - lb.x);
+        uv.y = (point.y - lb.y) / (rt.y - lb.y);
+        return uv;
     }
 
     AVec3 RectangleXY::center(float frame_time){
@@ -242,6 +249,13 @@ namespace ALICE_TRACER{
         return bound_;
     }
 
+    AVec2 RectangleXZ::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.x - lb.x) / abs(rt.x - lb.x);
+        uv.y = (point.z - lb.y) / abs(rt.y - lb.y);
+        return uv;
+    }
+
     AVec3 RectangleXZ::center(float frame_time){
         if(movement_){
             return movement_->movementFunc(center_, frame_time);
@@ -268,6 +282,7 @@ namespace ALICE_TRACER{
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
                 hit_res.point_ = ray.start_ + ray.dir_ * time;
+                hit_res.tex_coord_ = computeUV(hit_res.point_, lb, rt);
                 hit_res.setNormal(normal, ray.dir_);
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;
@@ -296,6 +311,13 @@ namespace ALICE_TRACER{
         bound_->b_min_ = c_center - AVec3(0.f, area_[0]/2.f, area_[1]/2.f) - AVec3(AABB_PADDING);
         bound_->b_max_ = c_center + AVec3(0.f, area_[0]/2.f, area_[1]/2.f) + AVec3(AABB_PADDING);
         return bound_;
+    }
+
+    AVec2 RectangleYZ::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.y - lb.x) / (rt.x - lb.x);
+        uv.y = (point.z - lb.y) / (rt.y - lb.y);
+        return uv;
     }
 
     AVec3 RectangleYZ::center(float frame_time){

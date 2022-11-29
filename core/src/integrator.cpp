@@ -161,7 +161,7 @@ namespace ALICE_TRACER{
                 Ray direct_ray;
                 Color direct;
                 float pdf_light = LightSampler::sampleRandomLight(scene, hit_res, direct_ray);
-                if(pdf_light > MIN_THRESHOLD) { //  pdf
+                if(pdf_light >= MIN_THRESHOLD) { //  pdf
                     AVec3 direct_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, direct_ray);
                     direct = direct_bxdf / pdf_light * direct_ray.color_.ToVec3() / RussianRoulette::prob();
                 }
@@ -183,7 +183,7 @@ namespace ALICE_TRACER{
                 // evaluate BxDF(x, n, i, o, mtl). Here, I consider that BxDF is related to 5 parameters
                 Color indirect;
                 AVec3 indirect_bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, out_ray);
-                if(out_ray_pdf > MIN_THRESHOLD) {
+                if(out_ray_pdf >= MIN_THRESHOLD) {
                     if (AIsNan(indirect_bxdf)) {
                         AliceLog::submitDebugLog("BxDF evaluation is null!!\n");
                         return;
@@ -280,10 +280,10 @@ namespace ALICE_TRACER{
                 {
                     Ray light_ray;
                     float pdf_light = LightSampler::sampleSingleLight(scene, l_id, hit_res, light_ray); // sample the selected light
-                    if (pdf_light > MIN_THRESHOLD) {
+                    if (pdf_light >= MIN_THRESHOLD) {
                         // Given the light sample ray, compute the bxdf pdf
                         float pdf_bxdf = hit_res.bxdf_->samplePDF(hit_res, in_ray, light_ray);
-                        if(pdf_bxdf > MIN_THRESHOLD) {
+                        if(pdf_bxdf >= MIN_THRESHOLD) {
                             // evaluate the light ray
                             AVec3 bxdf = hit_res.bxdf_->evaluateBxDF(hit_res, in_ray, light_ray);
                             // compute the weight by the multiple importance sampling
@@ -300,7 +300,7 @@ namespace ALICE_TRACER{
                     Ray bxdf_ray;
                     float bxdf_ray_pdf;
                     hit_res.bxdf_->sampleBxDF(bxdf_ray, bxdf_ray_pdf, hit_res, in_ray);
-                    if (bxdf_ray_pdf > MIN_THRESHOLD) {
+                    if (bxdf_ray_pdf >= MIN_THRESHOLD) {
                         if (!isMatchMtlType(hit_res.mtl_->type(), MaterialType::Specular)) {
                             // track the ray
                             traceRay(scene, bxdf_ray, iteration - 1);
@@ -312,7 +312,8 @@ namespace ALICE_TRACER{
                             float weight;
                             is_balance_heuristic_ ? weight = balanceHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light)
                                                   : weight = powerHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light);
-                            result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
+                            result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() /
+                                      RussianRoulette::prob();
                         } else {
                             if(LightSampler::checkVisibility(scene, bxdf_ray))
                                 bxdf_ray.color_ += scene->getLight(l_id)->mtl()->emit();
@@ -324,9 +325,9 @@ namespace ALICE_TRACER{
                         }
                     }
                 }
-
                 // sum up all the effects
-                in_ray.color_  += result;
+                if(AGreaterThanEqual(result.ToVec3(), AVec3(MIN_THRESHOLD)))
+                    in_ray.color_  += result;
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox

@@ -10,15 +10,17 @@
 
 namespace ALICE_TRACER{
     enum MaterialType{
-        Lambert = 1 << 0,
-        Specular = 1 << 1,
-        Glossy = 1 << 2,
-        Reflective = 1 << 3,
-        Refractive = 1 << 4
+        PureMaterial = 1 << 0,
+        Lambert =  PureMaterial | (1 << 1),
+        Specular = PureMaterial | (1 << 2),
+        Glossy = PureMaterial | (1 << 3),
+        TextureMaterial = (1 << 6),
+        LambertTexture = TextureMaterial | (1 << 7)
+
     };
 
     static bool isMatchMtlType(MaterialType t1, MaterialType t2){
-        return t1 & t2;
+        return t1 == t2;
     }
 
     // ---------------
@@ -118,10 +120,11 @@ namespace ALICE_TRACER{
     // ---------------
     class DiffuseMaterial : public Material{
     public:
-        explicit DiffuseMaterial(ImageBase * albedo);
+        explicit DiffuseMaterial(ImageBase * albedo): albedo_tex_(albedo){
+            mat_t_ = LambertTexture;
+        }
         virtual ~DiffuseMaterial() = default;
-        virtual Color albedo() override {return albedo_;}
-
+        inline ImageBase * albedoTexture(){return albedo_tex_;}
     protected:
         ImageBase * albedo_tex_;
     };
