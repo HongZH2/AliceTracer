@@ -17,8 +17,13 @@ namespace ALICE_TRACER{
     public:
         Sampler() = default;
         ~Sampler() = default;
+
+        // sample Rectangle XZ
         static float sampleRectangleXZ(RectangleXZ *rect, HitRes &hit_res, Ray & out_ray);
         static float samplePDFRectXZ(RectangleXZ *rect, HitRes &hit_res, Ray & ray);
+        // sample Texture
+        static float sampleEnv(EnvironmentalLight * env, HitRes &hit_res, Ray & out_ray);
+        static float samplePDFEnv(EnvironmentalLight * env, HitRes &hit_res, Ray & ray);
     };
 
     // ---------------------------
@@ -56,6 +61,22 @@ namespace ALICE_TRACER{
 
         static AVec3 accessTexture2D(ImageBase * img, AVec2 uv);
         static AVec3 accessTexture3D(ImageBase * img, AVec3 dir); // Given a light probe(hdr) and direction, sample the Light probe
+    };
+
+    // ---------------------------
+    // material sampler
+    // sample the texture image
+    // ---------------------------
+    class Discrete1DSampler{
+    public:
+        Discrete1DSampler(std::vector<double> & func);
+        ~Discrete1DSampler() = default;
+        float sampleFunc(float & v);
+        float samplePDF(float & v);
+    protected:
+        int32_t binarySearch(double u, int32_t a, int32_t b);
+        std::vector<double> cdf_;
+        std::vector<double> pdf_;
     };
 }
 

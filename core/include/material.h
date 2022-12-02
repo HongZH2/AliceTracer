@@ -15,8 +15,8 @@ namespace ALICE_TRACER{
         Specular = PureMaterial | (1 << 2),
         Glossy = PureMaterial | (1 << 3),
         TextureMaterial = (1 << 6),
-        LambertTexture = TextureMaterial | (1 << 7)
-
+        LambertTexture = TextureMaterial | (1 << 7),
+        RoughLambertTexture = LambertTexture | (1 << 8)
     };
 
     static bool isMatchMtlType(MaterialType t1, MaterialType t2){
@@ -123,10 +123,39 @@ namespace ALICE_TRACER{
         explicit DiffuseMaterial(ImageBase * albedo): albedo_tex_(albedo){
             mat_t_ = LambertTexture;
         }
+        explicit DiffuseMaterial(AVec3 albedo): Material(albedo){
+            mat_t_ = LambertTexture;
+        }
         virtual ~DiffuseMaterial() = default;
-        inline ImageBase * albedoTexture(){return albedo_tex_;}
+        virtual ImageBase * albedoTexture(){return albedo_tex_;}
+        virtual ImageBase * roughnessTexture(){return nullptr;}
     protected:
-        ImageBase * albedo_tex_;
+        ImageBase * albedo_tex_ = nullptr;
+    };
+
+    // ---------------
+    // -- Rough Diffuse Material
+    // ---------------
+    class RoughDiffuseMaterial: public DiffuseMaterial{
+    public:
+        explicit RoughDiffuseMaterial(ImageBase * albedo, ImageBase * roughness):
+                DiffuseMaterial(albedo), roughness_tex_(roughness){
+            mat_t_ = RoughLambertTexture;
+        }
+        explicit RoughDiffuseMaterial(ImageBase * albedo, float roughness):
+                DiffuseMaterial(albedo), alpha_(roughness){
+            mat_t_ = RoughLambertTexture;
+        }
+        explicit RoughDiffuseMaterial(AVec3 albedo, float roughness):
+                DiffuseMaterial(albedo), alpha_(roughness){
+            mat_t_ = RoughLambertTexture;
+        }
+        ~RoughDiffuseMaterial() override = default;
+        ImageBase * roughnessTexture() override {return roughness_tex_;}
+        float roughness() const{return alpha_;}
+    protected:
+        ImageBase * roughness_tex_ = nullptr;
+        float alpha_ = 0.0001f;
     };
 
 }

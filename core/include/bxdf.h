@@ -118,6 +118,22 @@ namespace ALICE_TRACER{
     };
 
     // --------------------------------------
+    // Diffuse BxDF
+    // --------------------------------------
+    class DisneyDiffuseBRDF: public BxDFBase{
+    public:
+        DisneyDiffuseBRDF() = default;
+        ~DisneyDiffuseBRDF() override = default;
+
+        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
+        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+    protected:
+        float modifiedFresenl(float roughness, float ndoti, float ndoto);
+        float Fresenl90(float roughness, float ndotx);
+    };
+
+    // --------------------------------------
     // Metal BxDF
     // --------------------------------------
     class MetalBRDF: public BxDFBase{
@@ -127,6 +143,23 @@ namespace ALICE_TRACER{
         AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
         void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
         float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+    };
+
+    // --------------------------------------
+    // scaledBxDF
+    // --------------------------------------
+    class ScaledBxDF: public  BxDFBase{
+    public:
+        ScaledBxDF(BxDFBase * bxdf): bxdf_(bxdf){
+
+        }
+        ~ScaledBxDF() = default;
+        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
+        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+    protected:
+        AVec3 scale_ = AVec3(1.f);
+        BxDFBase * bxdf_;
     };
 
 

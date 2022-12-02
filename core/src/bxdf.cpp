@@ -50,9 +50,7 @@ namespace ALICE_TRACER{
                 return albedo * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
             }
         }
-        else{
-            return hit_res.mtl_->albedo().ToVec3() * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
-        }
+        return hit_res.mtl_->albedo().ToVec3() * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
     }
 
     void CosinWeightedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
@@ -384,5 +382,93 @@ namespace ALICE_TRACER{
         // sample GGX
         MicrofacetGGX::sampleGGX(out, hit_res, in);
         pdf = samplePDF(hit_res, in, out);
+    }
+
+
+    // --------------------------------------
+    // Diffuse BxDF
+    // --------------------------------------
+    float DisneyDiffuseBRDF::Fresenl90(float roughness, float hdoto) {
+        return 0.5f + 2.f * roughness * pow(hdoto, 2.f);
+    }
+
+    float DisneyDiffuseBRDF::modifiedFresenl(float roughness, float ndotx, float hdoto) {
+        return 1.f + (Fresenl90(roughness, hdoto) - 1.f) * pow((1.f -ndotx), 5.f);
+    }
+
+    AVec3 DisneyDiffuseBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                                   const ALICE_TRACER::Ray &out) {
+        AVec3 normal = ANormalize(hit_res.normal_);
+        AVec3 in_dir = -ANormalize(in.dir_);
+        AVec3 out_dir = ANormalize(out.dir_);
+        AVec3 half = ANormalize(in_dir + out_dir);
+
+        float ndoti = AClamp(ADot(normal, in_dir));
+        float ndoto = AClamp(ADot(normal, out_dir));
+        float hdoto = AClamp(ADot(normal, out_dir));
+
+        if(hit_res.mtl_->type() & TextureMaterial){
+            auto t_mtl = dynamic_cast<RoughDiffuseMaterial *>(hit_res.mtl_);
+            if(t_mtl){
+                // access albedo
+                ImageBase* img = t_mtl->albedoTexture();
+                AVec3 albedo;
+                if(img) {
+                    albedo = TextureSampler::accessTexture2D(img,
+                                                             hit_res.tex_coord_);// AVec3(hit_res.tex_coord_, 0.f); //MaterialSampler::sampleRGB(img, hit_res.tex_coord_);
+                }
+                else{
+                    albedo = t_mtl->albedo().ToVec3();
+                }
+                    // access roughness
+                ImageBase * rough = t_mtl->roughnessTexture();
+                float alpha;
+                if(rough){
+                    AVec3 value = TextureSampler::accessTexture2D(rough, hit_res.tex_coord_);
+                    alpha = value.x;
+                }
+                else{
+                    alpha = t_mtl->roughness();
+                }
+                float f_l = modifiedFresenl(alpha, ndoto, hdoto);
+                float f_v = modifiedFresenl(alpha, ndoti, hdoto);
+
+                return albedo * AVec3(M_1_PI) * f_l * f_v * ndoto;
+            }
+        }
+        return AVec3(0.f);
+    }
+
+    float DisneyDiffuseBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                                const ALICE_TRACER::Ray &out) {
+        return AClamp(ADot(out.dir_, hit_res.normal_)) * (float)M_1_PI;
+    }
+
+    void DisneyDiffuseBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+                                const ALICE_TRACER::Ray &in) {
+        AVec3 normal = hit_res.normal_;
+        // sample Lambert BRDF = albedo/PI * cos<normal, out>
+        // so that we can take the cos<> term as the pdf for sampling
+        float phi = 2.f * (float)M_PI * random_val<float>();
+        float cos_theta = std::sqrt(1.f - random_val<float>());
+        float sin_theta = std::sqrt(1.f - cos_theta * cos_theta);
+        float x = sin_theta * std::cos(phi);
+        float y = sin_theta * std::sin(phi);
+        float z = cos_theta;
+
+        // transform the outward vector from local coordinate to global coordinate
+        AVec3 up;
+        abs(normal.z) > 0.9999f ? up = AVec3(1.f, 0.f, 0.f) : up = AVec3(0.f, 0.f, 1.f);
+        AVec3 tangent = ANormalize(ACross(up, normal));
+        AVec3 bitangent = ACross(normal, tangent);
+
+        // return the sample direction and the pdf
+        out.start_ = hit_res.point_;
+        out.time_ = 0.f;
+        out.fm_t_ = hit_res.frame_time_;
+        out.color_ = AVec3(0.f);
+        out.dir_ = tangent * x + bitangent * y + normal * z;
+        out.ray_t_ = LambertRay;
+        pdf = AClamp(ADot(out.dir_, normal)) * (float)M_1_PI;
     }
 }

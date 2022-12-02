@@ -23,6 +23,7 @@ set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
 
 # find OpenGL
 find_package(OpenGL REQUIRED) # opengl
+find_package(OpenCL REQUIRED) # opencl
 
 include_directories(
         ${ALICE_TRACER_ROOT}
@@ -55,13 +56,13 @@ if(APPLE)
                 Alice_Tracer
         )
 elseif(UNIX)
+        message(STATUS "sdsd:${OPENCL_LIBRARY}")
         #assimp
         set(ASSIMP_LIB ${ALICE_TRACER_ROOT}/third_parties/assimp/linux/lib/libassimp.so)
         include_directories(${ALICE_TRACER_ROOT}/third_parties/assimp/linux/include)
 
         set(THREADS_PREFER_PTHREAD_FLAG ON)
         find_package(Threads REQUIRED)
-
         target_link_libraries(
                 ${PROJECT_NAME}
                 ${CMAKE_DL_LIBS}

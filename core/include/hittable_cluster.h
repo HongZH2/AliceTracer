@@ -10,6 +10,7 @@
 #include "hittable.h"
 
 namespace ALICE_TRACER{
+    class Discrete1DSampler;
     // -------------------------------
     // BVH tree node:
     // inherit the hittable class, we will use the AABB to
@@ -134,6 +135,25 @@ namespace ALICE_TRACER{
         AVec3 scale_ = AVec3(1.f);
         AMat3 rot_mat_ = AMat3(1.f);
         ClusterList hittable_array_;
+    };
+
+    // -------------------------------
+    // Light Probe
+    // -------------------------------
+    class EnvironmentalLight: public Hittable{
+    public:
+        explicit EnvironmentalLight(ImageBase * img);
+        ~EnvironmentalLight() override;
+
+        bool CheckHittable(Ray & ray, HitRes & hit_res) override;
+        inline ImageBase * getEnvTex(){return env_;}
+        inline Discrete1DSampler * getRow(){return row_;}
+        inline std::vector<Discrete1DSampler *> & getRows(){return map_;}
+    protected:
+        ImageBase * env_;
+        double sum_;
+        Discrete1DSampler * row_;
+        std::vector<Discrete1DSampler *> map_;
     };
 }
 

@@ -61,6 +61,72 @@ namespace ALICE_TRACER{
         return pdf_omega;
     }
 
+    // sample environmental texture
+    float Sampler::sampleEnv(ALICE_TRACER::EnvironmentalLight *env, ALICE_TRACER::HitRes &hit_res,
+                             ALICE_TRACER::Ray &out_ray) {
+       auto row = env->getRow();
+       auto rows = env->getRows();
+       if(!row){
+           assert("row does not exist!\n");
+           return 0.f;
+       }
+       // firstly, sample the height
+       AVec2 uv;
+       float pdf_u = row->sampleFunc(uv.x);
+
+       // Then, sample width
+       int32_t index = floor(env->getEnvTex()->h() * uv.x);
+       float pdf_v = rows[index]->sampleFunc(uv.y);
+
+       // transfer the uv to direction
+       float theta = uv.x * M_PI;
+       float phi = uv.y * 2.f * M_PI;
+       AVec3 dir = AVec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+        // generate the output ray
+        out_ray.start_ = hit_res.point_;
+        out_ray.dir_ = ANormalize(dir);
+        out_ray.time_ = 0.f;
+        out_ray.fm_t_ = hit_res.frame_time_;
+        out_ray.color_ = TextureSampler::accessTexture3D(env->getEnvTex(), out_ray.dir_);
+        out_ray.ray_t_ = ShadowRay;
+
+       return pdf_u * pdf_v;
+    }
+
+    float Sampler::samplePDFEnv(ALICE_TRACER::EnvironmentalLight *env, ALICE_TRACER::HitRes &hit_res,
+                                ALICE_TRACER::Ray &ray) {
+        // direction to uv
+        AVec3 up = AVec3(0.f, 1.f, 0.f);
+        AVec3 forward = AVec3(0.f, 0.f, 1.f);
+        AVec3 right = AVec3(1.f, 0.f, 0.f);
+        AVec2 uv;
+        float udotd = ADot(ray.dir_, up);
+        float theta = acos(udotd);
+        AVec3 dir_p = ANormalize(ray.dir_ - udotd * up);
+        float phi = acos(ADot(dir_p, right));
+        if(ADot(dir_p, forward) > 0.f){
+            uv.x = 1.f - phi * M_1_PI / 2.f;
+        }
+        else{
+            uv.x = phi * M_1_PI / 2.f;
+        }
+        uv.y = theta * M_1_PI;
+
+        // compute the pdf
+        auto row = env->getRow();
+        auto rows = env->getRows();
+        if(!row){
+            assert("row does not exist!\n");
+            return 0.f;
+        }
+
+        float pdf_u = row->samplePDF(uv.x);
+        int32_t index = floor(env->getEnvTex()->h() * uv.x);
+        float pdf_v = rows[index]->samplePDF(uv.y);
+
+        return pdf_u * pdf_v;
+    }
+
     // ---------------------------
     // light sampler
     // ---------------------------
@@ -77,6 +143,10 @@ namespace ALICE_TRACER{
                 case 0: {
                     RectangleXZ *rect = std::get<RectangleXZ *>(light);
                     return Sampler::samplePDFRectXZ(rect, l_hit, ray);
+                }
+                case 4:{
+                    EnvironmentalLight * env = std::get<EnvironmentalLight *>(light);
+                    return Sampler::samplePDFEnv(env, l_hit, ray);
                 }
                 default:
                     break;
@@ -136,10 +206,23 @@ namespace ALICE_TRACER{
                 }
                 return pdf * 1.f/(float )scene->lights_.size();
             }
+            case 4:{
+                EnvironmentalLight * env = std::get<EnvironmentalLight *>(light);
+//                float pdf = 0.f;
+//                pdf = sampleEnv(env, hit_res, out_ray);
+//                if(pdf <= MIN_THRESHOLD) return 0.f;
+//                // check the visibility
+//                HitRes l_hit;
+//                scene->cluster_->CheckHittable(out_ray, l_hit);
+//                if(!l_hit.is_hit_){  // check if it is hit by the sample point
+//                   return pdf;
+//                }
+                return 0.f;
+            }
             default:
                 break;
         }
-        return 1.f;
+        return 0.f;
     }
 
 
@@ -174,7 +257,8 @@ namespace ALICE_TRACER{
     }
 
     AVec3 TextureSampler::accessTexture3D(ALICE_TRACER::ImageBase *img, ALICE_UTILS::AVec3 dir) {
-        if(!img) return AVec3(0.f);
+        if(!img)
+            return AVec3(0.f);
         auto t = img->type();
         AVec3 rgb;
         AVec3 n_dir = ANormalize(dir);
@@ -210,4 +294,57 @@ namespace ALICE_TRACER{
         return rgb;
     }
 
+    Discrete1DSampler::Discrete1DSampler(std::vector<double> & func) {
+        double sum = 0.;
+        double n = func.size();
+
+        pdf_.resize(n);
+        for(auto & val: func){
+            sum += val;
+        }
+        sum /= n;
+
+        // compute the cdf
+        for(int32_t i = 0; i < n; ++i){
+            pdf_[i] = func[i]/sum;
+        }
+
+        cdf_.resize(n + 1);
+        cdf_[0] = 0.f;
+        for(int32_t i = 0; i < n + 1; ++i){
+            cdf_[i] = cdf_[i - 1] + func[i - 1]/sum/n;
+        }
+    }
+
+    int32_t Discrete1DSampler::binarySearch(double u, int32_t a, int32_t b) {
+        if (a == b - 1)
+            return a;
+        int32_t mid = int((a + b) / 2);
+        if (cdf_[mid] == u)
+            return mid;
+        if (cdf_[mid] > u)
+            return binarySearch(u, a, mid);
+        else
+            return binarySearch(u, mid, b);
+    }
+
+    float Discrete1DSampler::samplePDF(float &v) {
+        float n = pdf_.size();
+        if(v == 1.f){
+            return pdf_[n - 1];
+        }
+        return pdf_[int32_t(n * v)];
+    }
+
+    float Discrete1DSampler::sampleFunc(float &v) {
+        float pdf;
+        float n = pdf_.size();
+        float u = random_val<float>();
+        int32_t index = binarySearch(u, 0, cdf_.size());
+        if(cdf_[index] <= u && cdf_[index + 1] > u){
+            v = (index + (u - cdf_[index])/(cdf_[index + 1] - cdf_[index])) / n;
+        }
+        pdf = pdf_[index];
+        return pdf;
+    }
 }

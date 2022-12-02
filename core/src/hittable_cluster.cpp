@@ -4,6 +4,7 @@
 
 #include "core/include/hittable_cluster.h"
 #include "core/include/random_variable.h"
+#include "core/include/sampler.h"
 
 namespace ALICE_TRACER{
     // -------------------------------
@@ -309,6 +310,58 @@ namespace ALICE_TRACER{
             if(triangle_mesh) triangle_mesh->parseMesh();
         }
         hittable_array_.buildBVH();
+    }
+
+    // -------------------------------
+    // Light Probe
+    // -------------------------------
+    EnvironmentalLight::EnvironmentalLight(ALICE_TRACER::ImageBase *img) : env_(img){
+        auto img_float = dynamic_cast<ImageFloat *>(img);
+        int32_t h = env_->h();
+        int32_t w = env_->w();
+
+        std::vector<double> rows(h);
+        sum_ = 0.;
+        for(int32_t i = 0; i < h; ++i){
+            double row = 0.;
+            for(int32_t j = 0; j < w; ++j){
+                AVec3 c_pixel = (*img_float)(i, j);
+                sum_ += (c_pixel.x + c_pixel.y + c_pixel.z)/3./(w * h);
+                row += (c_pixel.x + c_pixel.y + c_pixel.z)/3.;
+            }
+            rows[i] = row / (double)w;
+        }
+        for(auto & row: rows){
+            row /= sum_;
+        }
+        row_ = new Discrete1DSampler(rows);
+
+        // column
+        map_.resize(h);
+        for(int32_t i = 0; i < h; ++i){
+            std::vector<double> row_u(w);
+            for (int j = 0; j < w; ++j) {
+                AVec3 c_pixel = (*img_float)(i, j);
+                double uv = (c_pixel.x + c_pixel.y + c_pixel.z)/3./sum_;
+                row_u[j] = uv/rows[i];
+            }
+            Discrete1DSampler * v_row = new Discrete1DSampler(row_u);
+            map_[i] = v_row;
+        }
+    }
+
+    EnvironmentalLight::~EnvironmentalLight() {
+        for(auto & row: map_)
+            delete row;
+        delete row_;
+    }
+
+    bool EnvironmentalLight::CheckHittable(ALICE_TRACER::Ray &ray, ALICE_TRACER::HitRes &hit_res) {
+        hit_res.uni_id_ = id_;
+        hit_res.is_hit_ = false;
+        hit_res.point_ = ANormalize(ray.dir_);
+        hit_res.frame_time_ = ray.fm_t_;
+        return false;
     }
 
 

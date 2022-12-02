@@ -11,7 +11,7 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 - Multiple Importance Sampling
 #### - Materials
 - Lambert Diffuse
-- Perfect reflection/refraction
+- Perfect Reflection/Refraction
 - Microfacet Specular
 
 #### - Lights
@@ -27,10 +27,13 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 
 ### Showcases
 #### Monte Carlo for Path Tracing
+- Materials
+![](showcases/material_diffuse_50spp.png)
+![](showcases/material_500spp.png)
 - Cornell Box
-- ![](showcases/material.png)
-- ![](showcases/cornel_box_albedo_texture.png)
-![](showcases/white_room_monkey_100spp.png)
+![](showcases/white_room_100spp.png)
+![](showcases/material_1000spp.png)
+![](showcases/cornel_box_albedo_texture.png)
 - Area Lighting
 ![](showcases/area_lights.png)
 - Lambert Sphere

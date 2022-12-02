@@ -16,16 +16,21 @@ namespace ALICE_TRACER{
      */
     class Scene{
     public:
-        using LightType = std::variant<RectangleXZ*, RectangleXY*, RectangleYZ*, Sphere*>;
+        using LightType = std::variant<RectangleXZ*, RectangleXY*, RectangleYZ*, Sphere*, EnvironmentalLight*>;
         Scene();
         ~Scene();
         void addCamera(Camera & camera);
         void addHittable(Hittable * hittable);
         void buildBVH();
-        inline void setBgFunc(std::function<void(AVec3 &, AVec3 &)> func){ background_func_ = func;}  // set the background
+        inline EnvironmentalLight * getEnv(){return env_;}
         template<class T>
         void addLight(T * light){
-            cluster_->addHittableInst(light);
+            if constexpr (std::is_same<T, EnvironmentalLight>()){
+                env_ = light;
+            }
+            else{
+                cluster_->addHittableInst(light);
+            }
             lights_.emplace_back(light);
         }
 
@@ -38,6 +43,9 @@ namespace ALICE_TRACER{
                 case 0: {
                     return std::get<RectangleXZ *>(light);
                 }
+                case 4:{
+                    return std::get<EnvironmentalLight *>(light);
+                }
                 default:
                     return nullptr;
             }
@@ -46,7 +54,7 @@ namespace ALICE_TRACER{
         Camera * camera_;
         ClusterList * cluster_;
         std::vector<LightType> lights_;
-        std::function<void(AVec3 &, AVec3 &)> background_func_ = nullptr;
+        EnvironmentalLight * env_;  // TODO
     };
 }
 

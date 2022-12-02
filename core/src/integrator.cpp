@@ -54,7 +54,6 @@ namespace ALICE_TRACER{
 
     void UniformIntegrator::traceRay(ALICE_TRACER::Scene *scene, ALICE_TRACER::Ray &in_ray, uint32_t iteration) {
         auto & cluster_list = scene->cluster_;
-        auto & background_func = scene->background_func_;
 
         if(iteration > 0) {
             HitRes hit_res;
@@ -94,11 +93,11 @@ namespace ALICE_TRACER{
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox
-                if (background_func) {
-                    AVec3 col;
-                    background_func(in_ray.dir_, col);
-                    in_ray.color_ = col;
-                } else {
+                auto env = scene->getEnv();
+                if (env) {
+                    in_ray.color_ = TextureSampler::accessTexture3D(env->getEnvTex(), in_ray.dir_);
+                }
+                else {
                     in_ray.color_ = AVec3(0.f);
                 }
             }
@@ -145,7 +144,6 @@ namespace ALICE_TRACER{
 
     void NEEIntegrator::traceRay(Scene *scene, Ray &in_ray, uint32_t iteration) {
         auto & cluster_list = scene->cluster_;
-        auto & background_func = scene->background_func_;
 
         if(iteration > 0) {
             HitRes hit_res;
@@ -197,11 +195,11 @@ namespace ALICE_TRACER{
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox
-                if (background_func) {
-                    AVec3 col;
-                    background_func(in_ray.dir_, col);
-                    in_ray.color_ = col;
-                } else {
+                auto env = scene->getEnv();
+                if (env) {
+                    in_ray.color_ = TextureSampler::accessTexture3D(env->getEnvTex(), in_ray.dir_);
+                }
+                else {
                     in_ray.color_ = AVec3(0.f);
                 }
             }
@@ -258,7 +256,6 @@ namespace ALICE_TRACER{
 
     void MISIntegrator::traceRay(Scene *scene, Ray &in_ray, uint32_t iteration) {
         auto & cluster_list = scene->cluster_;
-        auto & background_func = scene->background_func_;
 
         if(iteration > 0) {
             HitRes hit_res;
@@ -312,8 +309,7 @@ namespace ALICE_TRACER{
                             float weight;
                             is_balance_heuristic_ ? weight = balanceHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light)
                                                   : weight = powerHeuristic(1.f, bxdf_ray_pdf, 1.f, pdf_light);
-                            result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() /
-                                      RussianRoulette::prob();
+                            result += bxdf * weight / bxdf_ray_pdf * bxdf_ray.color_.ToVec3() / RussianRoulette::prob();
                         } else {
                             if(LightSampler::checkVisibility(scene, bxdf_ray))
                                 bxdf_ray.color_ += scene->getLight(l_id)->mtl()->emit();
@@ -331,11 +327,11 @@ namespace ALICE_TRACER{
             }
             else {
                 // or not. we can do something else instead. For instance, sampling a skybox
-                if (background_func) {
-                    AVec3 col;
-                    background_func(in_ray.dir_, col);
-                    in_ray.color_ = col;
-                } else {
+                auto env = scene->getEnv();
+                if (env) {
+                    in_ray.color_ = TextureSampler::accessTexture3D(env->getEnvTex(), in_ray.dir_);
+                }
+                else {
                     in_ray.color_ = AVec3(0.f);
                 }
             }
