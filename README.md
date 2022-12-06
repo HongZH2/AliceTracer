@@ -29,17 +29,28 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 #### Monte Carlo for Path Tracing
 - Materials
 
-  <img src="showcases/material_diffuse_50spp.png" width=150>
-  <img src="showcases/material_500spp.png" width=150>
-  <img src="showcases/material_1000spp_specular.png" width=150>
-  <img src="showcases/material_roughmetal_50spp.png" width=150>
-
+  <div align="center">
+  <img src="showcases/material_diffuse_50spp.png" width=180>
+  <img src="showcases/material_500spp.png" width=180>
+  <img src="showcases/material_1000spp_specular.png" width=180>
+  <img src="showcases/material_roughmetal_50spp.png" width=180>
+  </div>
+  
 - Cornell Box
-![](showcases/white_room_100spp.png)
-![](showcases/material_1000spp.png)
-![](showcases/cornel_box_albedo_texture.png)
+  <div align="center">
+  <img src="showcases/white_room_100spp.png" width=600>
+  <img src="showcases/material_1000spp.png" width=600>
+  <img src="showcases/cornel_box_albedo_texture.png" width=600>
+  </div>
+  
 - Area Lighting
-![](showcases/area_lights.png)
+ <div align="center">
+ <img src="showcases/area_lights.png" width=600>
+ </div>
+
 - Lambert Sphere
-![](showcases/first_demo.png)
+ <div align="center">
+ <img src="showcases/first_demo.png" width=600>
+ </div>
+
 
