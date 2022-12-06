@@ -71,6 +71,10 @@ namespace ALICE_TRACER{
         int32_t w, h, c;
         float * buffer;
         buffer = stbi_loadf(path.c_str(), &w, &h, &c, 0);
+        if(!buffer) {
+            assert("Fail to load image!!!\n");
+            return nullptr;
+        }
         ImageBase * img = new ImageFloat(ImageType::IMG_RGB_Float, w, h, c, w * c, buffer);
         pool.pool_[name] = img;
         return img;

@@ -54,6 +54,16 @@ namespace ALICE_UTILS {
     }
 
     template <typename T>
+    inline bool ALessThanEqual(const T & v1, const T & v2){
+        auto res = glm::lessThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(res[i])
+                return true;
+        }
+        return false;
+    }
+
+    template <typename T>
     inline bool AGreaterThan(const T & v1, const T & v2){
         auto res = glm::greaterThanEqual(v1, v2);
         for(int i = 0; i < res.length(); ++i){

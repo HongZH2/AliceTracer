@@ -16,7 +16,8 @@ namespace ALICE_TRACER{
         Glossy = PureMaterial | (1 << 3),
         TextureMaterial = (1 << 6),
         LambertTexture = TextureMaterial | (1 << 7),
-        RoughLambertTexture = LambertTexture | (1 << 8)
+        RoughLambertTexture = LambertTexture | (1 << 8),
+        UberTexture = TextureMaterial | (1 << 9)
     };
 
     static bool isMatchMtlType(MaterialType t1, MaterialType t2){
@@ -115,6 +116,7 @@ namespace ALICE_TRACER{
         float roughness_;
     };
 
+
     // ---------------
     // -- Diffuse Material
     // ---------------
@@ -156,6 +158,27 @@ namespace ALICE_TRACER{
     protected:
         ImageBase * roughness_tex_ = nullptr;
         float alpha_ = 0.0001f;
+    };
+
+    // ---------------
+    // -- Uber Material
+    // ---------------
+    class UberMaterial: public Material{
+    public:
+        UberMaterial(){
+            mat_t_ = MaterialType::UberTexture;
+        }
+        ~UberMaterial() override = default;
+        void pushLayer(Material* mtl){
+            layers_.push_back(mtl);
+        }
+        Material* getLayer(int32_t id){
+            if(id < layers_.size())
+                return layers_[id];
+            return nullptr;
+        }
+    protected:
+        std::vector<Material*> layers_;
     };
 
 }

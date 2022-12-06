@@ -269,6 +269,10 @@ namespace ALICE_TRACER{
                 if ((max_num_iteration_ - iteration) >= min_num_iteration_ && RussianRoulette::isEnd())  // return if iteration is greater than the minimum iteration
                     return;
 
+                UberBxdf * u_bxdf = dynamic_cast<UberBxdf *>(hit_res.bxdf_);
+                if(u_bxdf)
+                    u_bxdf->sampleLayer();
+
                 // step 1. randomly pick one light source
                 int32_t l_id = LightSampler::randomLight(scene);
 
@@ -322,7 +326,7 @@ namespace ALICE_TRACER{
                     }
                 }
                 // sum up all the effects
-                if(AGreaterThanEqual(result.ToVec3(), AVec3(MIN_THRESHOLD)))
+                if(AGreaterThanEqual(result.ToVec3(), AVec3(MIN_THRESHOLD)) && ALessThanEqual(result.ToVec3(), AVec3(MAX_THRESHOLD)))
                     in_ray.color_  += result;
             }
             else {

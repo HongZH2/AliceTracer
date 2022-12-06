@@ -39,7 +39,7 @@ namespace ALICE_TRACER{
     // Cosin weighted BRDF
     // brdf = cos<norm, light> * dw
     // --------------------------------------
-    AVec3 CosinWeightedBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    AVec3 CosinWeightedBRDF::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                           const ALICE_TRACER::Ray &out) {
         // we take the cos<> term as the pdf, so that cos<> term in the render equation is cancelled.
         if(hit_res.mtl_->type() & TextureMaterial){
@@ -53,7 +53,7 @@ namespace ALICE_TRACER{
         return hit_res.mtl_->albedo().ToVec3() * AVec3(M_1_PI) * AClamp(ADot(out.dir_, hit_res.normal_));
     }
 
-    void CosinWeightedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void CosinWeightedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                        const ALICE_TRACER::Ray &in) {
         AVec3 normal = hit_res.normal_;
         // sample Lambert BRDF = albedo/PI * cos<normal, out>
@@ -81,7 +81,7 @@ namespace ALICE_TRACER{
         pdf = AClamp(ADot(out.dir_, normal)) * (float)M_1_PI;
     }
 
-    float CosinWeightedBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float CosinWeightedBRDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                        const ALICE_TRACER::Ray &out) {
         // given a direction, return the pdf
         // Lambert BRDF PDF: cos<dir, normal> / PI
@@ -91,7 +91,7 @@ namespace ALICE_TRACER{
     // --------------------------------------
     // Perfect Mirrored BRDF
     // --------------------------------------
-    AVec3 PerfectMirroredBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    AVec3 PerfectMirroredBRDF::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                             const ALICE_TRACER::Ray &out) {
         AVec3 normal = hit_res.normal_;
         AVec3 in_dir = ANormalize(in.dir_);
@@ -104,12 +104,12 @@ namespace ALICE_TRACER{
         return AVec3{0.f};
     }
 
-    float PerfectMirroredBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float PerfectMirroredBRDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                          const ALICE_TRACER::Ray &out) {
         return 0.f;  // set it to zero
     }
 
-    void PerfectMirroredBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void PerfectMirroredBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                          const ALICE_TRACER::Ray &in) {
         AVec3 in_dir = ANormalize(in.dir_);
         out.start_ = hit_res.point_;
@@ -124,7 +124,7 @@ namespace ALICE_TRACER{
     // --------------------------------------
     // Perfect Refracted BRDF
     // --------------------------------------
-    AVec3 PerfectRefractedBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    AVec3 PerfectRefractedBRDF::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                              const ALICE_TRACER::Ray &out) {
         FresnelMaterial * t_mtl = dynamic_cast<FresnelMaterial *>(hit_res.mtl_);
         if(t_mtl) {
@@ -151,12 +151,12 @@ namespace ALICE_TRACER{
         return AVec3{0.f};
     }
 
-    float PerfectRefractedBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float PerfectRefractedBRDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                           const ALICE_TRACER::Ray &out) {
         return 0.f; // set it to zero
     }
 
-    void PerfectRefractedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void PerfectRefractedBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                           const ALICE_TRACER::Ray &in) {
         FresnelMaterial * t_mtl = dynamic_cast<FresnelMaterial *>(hit_res.mtl_);
         if(t_mtl) {
@@ -190,7 +190,7 @@ namespace ALICE_TRACER{
     // --------------------------------------
     // Specular Refracted/Mirrored BxDF
     // --------------------------------------
-    AVec3 DielectricSpecularBSDF::evaluateBxDF(const HitRes &hit_res, const Ray &in, const Ray &out) {
+    AVec3 DielectricSpecularBSDF::evaluateBxDF(HitRes &hit_res, const Ray &in, const Ray &out) {
         float F = FresnelDielectric::FrDielectric(hit_res, in, out);
         switch (out.ray_t_) {
             case SpecularReflectedRay:
@@ -203,12 +203,12 @@ namespace ALICE_TRACER{
         return AVec3(0.f);
     }
 
-    float DielectricSpecularBSDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float DielectricSpecularBSDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                             const ALICE_TRACER::Ray &out) {
         return 0.f;
     }
 
-    void DielectricSpecularBSDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void DielectricSpecularBSDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                             const ALICE_TRACER::Ray &in) {
         FresnelMaterial * t_mtl = dynamic_cast<FresnelMaterial *>(hit_res.mtl_);
         if(!t_mtl) {
@@ -323,7 +323,7 @@ namespace ALICE_TRACER{
     // Metal BxDF
     // --------------------------------------
 
-    AVec3 MetalBRDF::evaluateBxDF(const HitRes &hit_res, const Ray &in, const Ray &out) {
+    AVec3 MetalBRDF::evaluateBxDF(HitRes &hit_res, const Ray &in, const Ray &out) {
         MetalMaterial * mtl = dynamic_cast<MetalMaterial *>(hit_res.mtl_);
         if(!mtl) return AVec3(0.f);
 
@@ -352,7 +352,7 @@ namespace ALICE_TRACER{
 
     }
 
-    float MetalBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float MetalBRDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                             const ALICE_TRACER::Ray &out) {
         MetalMaterial * mtl = dynamic_cast<MetalMaterial *>(hit_res.mtl_);
         if(!mtl)
@@ -377,12 +377,76 @@ namespace ALICE_TRACER{
         return MIN_THRESHOLD;
     }
 
-    void MetalBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void MetalBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                             const ALICE_TRACER::Ray &in) {
         // sample GGX
         MicrofacetGGX::sampleGGX(out, hit_res, in);
         pdf = samplePDF(hit_res, in, out);
     }
+
+    // --------------------------------------
+    // Coat BxDF
+    // --------------------------------------
+//    AVec3 CoatBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+//                                 const ALICE_TRACER::Ray &out) {
+//        CoatMaterial * mtl = dynamic_cast<CoatMaterial *>(hit_res.mtl_);
+//        if(!mtl) return AVec3(0.f);
+//
+//        AVec3 normal = ANormalize(hit_res.normal_);
+//        AVec3 in_dir = -ANormalize(in.dir_);
+//        AVec3 out_dir = ANormalize(out.dir_);
+//        AVec3 half = ANormalize(in_dir + out_dir);
+//        float roughness = mtl->roughness();
+//        AVec3 f0 = AVec3((1.5f - 1.f) * (1.5f - 1.f) / (1.5f + 1.f) / (1.5f + 1.f));
+//
+//        float ndoti = AClamp(ADot(normal, in_dir));
+//        float ndoto = AClamp(ADot(normal, out_dir));
+//        float idoth = AClamp(ADot(half, in_dir));
+////        float ldoth = AClamp(ADot(half, out_dir));
+//        if(ndoto < MIN_THRESHOLD && idoth < MIN_THRESHOLD) {
+//            return AVec3(1.f);
+//        }
+//        // remap the roughness
+//        AVec3 F = FresnelSchlick::FSchlick(f0, AVec3(1.f), idoth);
+//        float D = MicrofacetGGX::isotropicGGX(in_dir, out_dir, normal, roughness);
+//        float G = MicrofacetGGX::HeightCorrectedSmith(ndoti, ndoto, roughness);
+//
+//        // bxdf = [F * D * G * / (4 * <n, i> * <n, o>)] * <n, o>
+//        AVec3 bxdf = F * D * G / (4.f * ndoti);
+//        return bxdf;
+//    }
+//
+//    float CoatBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+//                              const ALICE_TRACER::Ray &out) {
+//        CoatMaterial * mtl = dynamic_cast<CoatMaterial *>(hit_res.mtl_);
+//        if(!mtl)
+//            return 0.f;
+//
+//        AVec3 normal = ANormalize(hit_res.normal_);
+//        AVec3 in_dir = -ANormalize(in.dir_);
+//        AVec3 out_dir = ANormalize(out.dir_);
+//        AVec3 half = ANormalize(in_dir + out_dir);
+//        float ndoti = AClamp(ADot(normal, in_dir));
+//        float ndoto = AClamp(ADot(normal, out_dir));
+//        float ndoth = AClamp(ADot(normal, half));
+//        float idoth = AClamp(ADot(half, in_dir));
+//        float alpha = mtl->roughness();
+//
+//        if(idoth > MIN_THRESHOLD) {
+//            float pdf_h = MicrofacetGGX::isotropicGGX(in_dir, out_dir, normal, alpha);
+//            // pdf = D * ndoth / (4 * vdoth)
+//            float pdf = pdf_h * ndoth / 4.f / idoth;
+//            return pdf;
+//        }
+//        return MIN_THRESHOLD;
+//    }
+//
+//    void CoatBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+//                              const ALICE_TRACER::Ray &in) {
+//        // sample GGX
+//        MicrofacetGGX::sampleGGX(out, hit_res, in);
+//        pdf = samplePDF(hit_res, in, out);
+//    }
 
 
     // --------------------------------------
@@ -396,7 +460,7 @@ namespace ALICE_TRACER{
         return 1.f + (Fresenl90(roughness, hdoto) - 1.f) * pow((1.f -ndotx), 5.f);
     }
 
-    AVec3 DisneyDiffuseBRDF::evaluateBxDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    AVec3 DisneyDiffuseBRDF::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                    const ALICE_TRACER::Ray &out) {
         AVec3 normal = ANormalize(hit_res.normal_);
         AVec3 in_dir = -ANormalize(in.dir_);
@@ -439,12 +503,12 @@ namespace ALICE_TRACER{
         return AVec3(0.f);
     }
 
-    float DisneyDiffuseBRDF::samplePDF(const ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+    float DisneyDiffuseBRDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
                                 const ALICE_TRACER::Ray &out) {
         return AClamp(ADot(out.dir_, hit_res.normal_)) * (float)M_1_PI;
     }
 
-    void DisneyDiffuseBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, const ALICE_TRACER::HitRes &hit_res,
+    void DisneyDiffuseBRDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
                                 const ALICE_TRACER::Ray &in) {
         AVec3 normal = hit_res.normal_;
         // sample Lambert BRDF = albedo/PI * cos<normal, out>
@@ -471,4 +535,75 @@ namespace ALICE_TRACER{
         out.ray_t_ = LambertRay;
         pdf = AClamp(ADot(out.dir_, normal)) * (float)M_1_PI;
     }
+
+    // --------------------------------------
+    // scaledBxDF
+    // --------------------------------------
+    AVec3 ScaledBxDF::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                                   const ALICE_TRACER::Ray &out) {
+        return bxdf_->evaluateBxDF(hit_res, in, out);
+    }
+
+    float ScaledBxDF::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                                const ALICE_TRACER::Ray &out) {
+        return bxdf_->samplePDF(hit_res, in, out);
+    }
+
+    void ScaledBxDF::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
+                                const ALICE_TRACER::Ray &in) {
+        return bxdf_->sampleBxDF(out, pdf, hit_res, in);
+    }
+
+    // --------------------------------------
+    // uber BxDF
+    // --------------------------------------
+    int32_t UberBxdf::sampleLayer() {
+        cur_id_ = random_int(0, layers_.size() - 1);
+        return cur_id_;
+    }
+
+    void UberBxdf::pushLayer(ALICE_TRACER::ScaledBxDF *bxdf) {
+        layers_.emplace_back(bxdf);
+    }
+
+    void UberBxdf::deleteLayer(ALICE_TRACER::ScaledBxDF *bxdf) {
+        std::remove(layers_.begin(), layers_.end(), bxdf);
+    }
+
+    AVec3 UberBxdf::evaluateBxDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                                 const ALICE_TRACER::Ray &out) {
+       UberMaterial * mtl = dynamic_cast<UberMaterial *>(hit_res.mtl_);
+       if(!mtl){
+           assert("material is not matched!!!\n");
+       }
+       HitRes t_hit = hit_res;
+       t_hit.mtl_ = mtl->getLayer(cur_id_);
+       return layers_[cur_id_]->evaluateBxDF(t_hit, in, out) * layers_[cur_id_]->getScale();
+    }
+
+    float UberBxdf::samplePDF(ALICE_TRACER::HitRes &hit_res, const ALICE_TRACER::Ray &in,
+                              const ALICE_TRACER::Ray &out) {
+        UberMaterial * mtl = dynamic_cast<UberMaterial *>(hit_res.mtl_);
+        if(!mtl){
+            assert("material is not matched!!!\n");
+        }
+        HitRes t_hit = hit_res;
+        t_hit.mtl_ = mtl->getLayer(cur_id_);
+       float pdf = layers_[cur_id_]->samplePDF(t_hit, in, out);
+        pdf  *= 1.f / layers_.size();
+        return pdf;
+    }
+
+    void UberBxdf::sampleBxDF(ALICE_TRACER::Ray &out, float &pdf, ALICE_TRACER::HitRes &hit_res,
+                              const ALICE_TRACER::Ray &in) {
+        UberMaterial * mtl = dynamic_cast<UberMaterial *>(hit_res.mtl_);
+        if(!mtl){
+            assert("material is not matched!!!\n");
+        }
+        HitRes t_hit = hit_res;
+        t_hit.mtl_ = mtl->getLayer(cur_id_);
+        layers_[cur_id_]->sampleBxDF(out, pdf, t_hit, in);
+        pdf  *= 1.f / layers_.size();
+    }
+
 }

@@ -64,9 +64,7 @@ int main(){
     // copper AVec3(0.955f, 0.638f, 0.538f)
     // gold AVec3(1.f, 0.782f, 0.344f)
     ALICE_TRACER::MetalMaterial mtl8{AVec3(1.f),  AVec3(0.955f, 0.638f, 0.538f), 0.01f};
-    ALICE_TRACER::MetalMaterial mtl10{AVec3(1.f), AVec3(0.955f, 0.638f, 0.538f), 0.1f};
     ALICE_TRACER::MetalMaterial mtl11{AVec3(1.f), AVec3(0.955f, 0.638f, 0.538f), 0.5f};
-    ALICE_TRACER::RoughDiffuseMaterial mtl12{AVec3(0.5f, 0.2f, 0.1f), 1.0f};
     ALICE_TRACER::RoughDiffuseMaterial mtl13{AVec3(0.2f), 1.f};
 
 
@@ -77,21 +75,34 @@ int main(){
     ALICE_TRACER::PerfectMirroredBRDF mirrored;
     ALICE_TRACER::PerfectRefractedBRDF refracted;
     ALICE_TRACER::DielectricSpecularBSDF dielectric;
-    ALICE_TRACER::MetalBRDF metal;
     ALICE_TRACER::DisneyDiffuseBRDF disney_diffuse;
+
+    // uber bxdf
+    ALICE_TRACER::UberMaterial uber_mtl;
+    ALICE_TRACER::RoughDiffuseMaterial mtl12{AVec3(0.8f, 0.2f, 0.18f), 1.0f};
+    ALICE_TRACER::MetalMaterial mtl10{AVec3(1.f), AVec3(0.8f, 0.2f, 0.18f), 0.001f};
+    uber_mtl.pushLayer(&mtl12);
+    uber_mtl.pushLayer(&mtl10);
+
     ALICE_TRACER::DisneyDiffuseBRDF disney_diffuse2;
+    ALICE_TRACER::ScaledBxDF scaled_ddiffuse = {&disney_diffuse2, AVec3(0.25f)};
+    ALICE_TRACER::MetalBRDF metal;
+    ALICE_TRACER::ScaledBxDF scaled_metal = {&metal, AVec3(0.75f)};
+    ALICE_TRACER::UberBxdf uber;
+    uber.pushLayer(&scaled_ddiffuse);
+    uber.pushLayer(&scaled_metal);
 
     // instances
     ALICE_TRACER::RectangleXZ * rect0 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -1.f, 0.f), AVec3(10.f), &mtl9, &lambert};
-//    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &mtl12, &disney_diffuse};
+    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &uber_mtl, &uber};
 
 
     ALICE_TRACER::TriangleInstance * t2 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -0.95f, -0.3f),
                                                                              AVec3(0.6f),
                                                                              0.f,
                                                                              AVec3(0.f, 1.f ,0.f),
-                                                                             &mtl8,
-                                                                             &metal};
+                                                                             &uber_mtl,
+                                                                             &uber};
     ALICE_TRACER::ModelLoader::loadModel("../assets/mitsuba/mitsuba-sphere.obj", t2);
     t2->setTriangleMaterial(0, &mtl13, &disney_diffuse);
 
@@ -104,12 +115,12 @@ int main(){
     scene.addCamera(camera);
     scene.addLight(env);
     scene.addHittable(rect0);
-    scene.addHittable(t2);
-//    scene.addHittable(sphere);
+//    scene.addHittable(t2);
+    scene.addHittable(sphere);
     scene.buildBVH();
 
     // integrator
-    ALICE_TRACER::MISIntegrator integrator{50, 50, 5};
+    ALICE_TRACER::MISIntegrator integrator{1000, 50, 5};
 
     // create a texture
     ALICE_TRACER::TextureBuffer texture;

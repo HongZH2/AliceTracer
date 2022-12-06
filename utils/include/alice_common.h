@@ -23,6 +23,7 @@ namespace ALICE_UTILS {
 #define MIN_RAY_TIME 1e-4
 #define MAX_RAY_TIME FLT_MAX
 #define MIN_THRESHOLD 1e-4
+#define MAX_THRESHOLD 1e4
 }
 
 

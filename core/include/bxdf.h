@@ -61,11 +61,11 @@ namespace ALICE_TRACER{
         BxDFBase() = default;
         virtual ~BxDFBase() = default;
          // evaluate the BxDF
-        virtual AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) = 0;
+        virtual AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) = 0;
         // sample the BxDF
-        virtual void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) = 0;
+        virtual void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) = 0;
         // compute the pdf of the sample direction
-        virtual float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) = 0;
+        virtual float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) = 0;
     };
 
     // --------------------------------------
@@ -76,9 +76,9 @@ namespace ALICE_TRACER{
     public:
         CosinWeightedBRDF() = default;
         ~CosinWeightedBRDF() override = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     };
 
     // --------------------------------------
@@ -88,9 +88,9 @@ namespace ALICE_TRACER{
     public:
         PerfectMirroredBRDF() = default;
         ~PerfectMirroredBRDF() override = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     };
 
     // --------------------------------------
@@ -100,9 +100,9 @@ namespace ALICE_TRACER{
     public:
         PerfectRefractedBRDF() = default;
         ~PerfectRefractedBRDF() override = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     };
 
     // --------------------------------------
@@ -112,9 +112,9 @@ namespace ALICE_TRACER{
     public:
         DielectricSpecularBSDF() = default;
         ~DielectricSpecularBSDF() override = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     };
 
     // --------------------------------------
@@ -125,9 +125,9 @@ namespace ALICE_TRACER{
         DisneyDiffuseBRDF() = default;
         ~DisneyDiffuseBRDF() override = default;
 
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     protected:
         float modifiedFresenl(float roughness, float ndoti, float ndoto);
         float Fresenl90(float roughness, float ndotx);
@@ -140,28 +140,58 @@ namespace ALICE_TRACER{
     public:
         MetalBRDF() = default;
         ~MetalBRDF() override = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
     };
+
+    // --------------------------------------
+    // Coat BxDF
+    // --------------------------------------
+//    class CoatBRDF: public BxDFBase{
+//    public:
+//        CoatBRDF() = default;
+//        ~CoatBRDF() override = default;
+//        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+//        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
+//        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+//    };
 
     // --------------------------------------
     // scaledBxDF
     // --------------------------------------
     class ScaledBxDF: public  BxDFBase{
     public:
-        ScaledBxDF(BxDFBase * bxdf): bxdf_(bxdf){
+        ScaledBxDF(BxDFBase * bxdf, AVec3 scale): bxdf_(bxdf), scale_(scale){
 
         }
         ~ScaledBxDF() = default;
-        AVec3 evaluateBxDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
-        void sampleBxDF(Ray & out, float & pdf, const HitRes & hit_res, const Ray & in) override;
-        float samplePDF(const HitRes & hit_res, const Ray & in, const Ray & out) override;
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        inline AVec3 getScale(){return scale_;}
     protected:
         AVec3 scale_ = AVec3(1.f);
         BxDFBase * bxdf_;
     };
 
+    // --------------------------------------
+    // uber BxDF
+    // --------------------------------------
+    class UberBxdf: public BxDFBase{
+    public:
+        UberBxdf() = default;
+        ~UberBxdf() = default;
+        int32_t sampleLayer();
+        AVec3 evaluateBxDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void sampleBxDF(Ray & out, float & pdf, HitRes & hit_res, const Ray & in) override;
+        float samplePDF(HitRes & hit_res, const Ray & in, const Ray & out) override;
+        void pushLayer(ScaledBxDF * bxdf);
+        void deleteLayer(ScaledBxDF * bxdf);
+    protected:
+        std::vector<ScaledBxDF *> layers_;
+        int32_t cur_id_ = 0;
+    };
 
 }
 
