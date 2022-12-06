@@ -94,7 +94,7 @@ int main(){
 
     // instances
     ALICE_TRACER::RectangleXZ * rect0 = new ALICE_TRACER::RectangleXZ{AVec3(0.f, -1.f, 0.f), AVec3(10.f), &mtl9, &lambert};
-    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &uber_mtl, &uber};
+//    ALICE_TRACER::Sphere * sphere = new ALICE_TRACER::Sphere{AVec3(0.f, 1.f, 0.f), 1.f, &uber_mtl, &uber};
 
 
     ALICE_TRACER::TriangleInstance * t2 = new ALICE_TRACER::TriangleInstance{AVec3(0.f, -0.95f, -0.3f),
@@ -115,8 +115,8 @@ int main(){
     scene.addCamera(camera);
     scene.addLight(env);
     scene.addHittable(rect0);
-//    scene.addHittable(t2);
-    scene.addHittable(sphere);
+    scene.addHittable(t2);
+//    scene.addHittable(sphere);
     scene.buildBVH();
 
     // integrator

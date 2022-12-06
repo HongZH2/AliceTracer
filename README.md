@@ -28,8 +28,12 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 ### Showcases
 #### Monte Carlo for Path Tracing
 - Materials
-![](showcases/material_diffuse_50spp.png)
-![](showcases/material_500spp.png)
+
+  <img src="showcases/material_diffuse_50spp.png" width=150>
+  <img src="showcases/material_500spp.png" width=150>
+  <img src="showcases/material_1000spp_specular.png" width=150>
+  <img src="showcases/material_roughmetal_50spp.png" width=150>
+
 - Cornell Box
 ![](showcases/white_room_100spp.png)
 ![](showcases/material_1000spp.png)
