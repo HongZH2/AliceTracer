@@ -21,7 +21,10 @@ Currently, I build this based on the path tracing algorithm, which is a general 
 - light probe (hdr)
 ### - TODO
 - More Materials
-    - Disney Materials
+    - Sheen 
+    - clearcoat
+    - Colored Tint
+    - ...
 - Bidirectional Monte Carlo with Multiple Importance
 - Multiple-Thread BVH/ Optimized BVH
 
