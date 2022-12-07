@@ -1,7 +1,6 @@
 # AliceTracer
 ### A Ray Tracer Demo 
-Currently, I build this based on the path tracing algorithm, which is a general method for scene rendering.
-
+This is a CPU-based path tracing project, that I built for experiments.
 ### Features
 #### - Spatial Separation
 - Naive Two-level BVH
