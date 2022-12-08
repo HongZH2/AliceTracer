@@ -28,9 +28,7 @@ namespace ALICE_TRACER{
         cluster_->addHittableInst(hittable);
     }
 
-    void Scene::removeHittable(Hittable * hittable) {
-        cluster_->removeHittableInst(hittable->ID());
-    }
+
 
 
 

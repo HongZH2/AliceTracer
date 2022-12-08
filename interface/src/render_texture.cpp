@@ -2,7 +2,14 @@
 // Created by Hong Zhang on 2022/10/30.
 //
 #include "interface/include/render_texture.h"
+
+#ifdef __APPLE__
 #include "OpenGL/gl3.h"
+#elif __linux__
+#define GL_GLEXT_PROTOTYPES
+#include "GL/gl.h"
+#include "GL/glext.h"
+#endif
 
 namespace ALICE_TRACER{
 
@@ -92,7 +99,7 @@ namespace ALICE_TRACER{
 
     void TextureBuffer::updateTexture(ALICE_TRACER::ImageBase *img) {
         glBindTexture(GL_TEXTURE_2D, tid_);
-        auto * temp = (ImageRGBA *) img;
+        auto * temp = (ImageUByte *) img;
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->w(), img->h(), GL_RGB, GL_UNSIGNED_BYTE, temp->getDataPtr());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -111,13 +118,13 @@ namespace ALICE_TRACER{
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         switch (img->type()) {
-            case ImageType::IMG_RGB: {
-                auto * temp = (ImageRGB *) img;
+            case ImageType::IMG_RGB_UByte: {
+                auto * temp = (ImageUByte *) img;
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, temp->w(), temp->h(), 0, GL_RGB, GL_UNSIGNED_BYTE, temp->getDataPtr());
                 break;
             }
-            case ImageType::IMG_RGBA:{
-                auto * temp = (ImageRGBA *) img;
+            case ImageType::IMG_RGBA_UByte: {
+                auto * temp = (ImageUByte *) img;
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, temp->w(), temp->h(), 0, GL_RGBA, GL_UNSIGNED_INT, temp->getDataPtr());
                 break;
             }

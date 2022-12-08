@@ -13,24 +13,24 @@ set(ALICE_TRACER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 ###############
 # Third Parties
 ###############
-# glfw
-set(GLFW_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/glfw/include)
 
-# imgui
-set(IMGUI_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/imgui/)
+set(GLFW_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/glfw/include)       # glfw
+set(IMGUI_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/imgui/)         # imgui
+set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)         # spdlog
 
-# spdlog
-set(SPDLOG_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/spdlog/include)
-
-# opengl
-find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-
-# assimp
-set(ASSIMP_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/assimp/include)
+if(APPLE)
+    set(ASSIMP_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/assimp/mac/include) #assimp
+    set(ASSIMP_LIB ${ALICE_TRACER_ROOT}/third_parties/assimp/mac/lib/libassimp.dylib)
+else(UNIX)
+    set(ASSIMP_INCLUDE ${ALICE_TRACER_ROOT}/third_parties/assimp/linux/include) #assimp
+    set(ASSIMP_LIB ${ALICE_TRACER_ROOT}/third_parties/assimp/linux/lib/libassimp.so)
+endif ()
 
 ###############
 # Alice Tracer
 ###############
+find_package(OpenGL REQUIRED) # opengl
+
 # Alice Tracer include
 include_directories(
         ${ALICE_TRACER_ROOT}
@@ -46,10 +46,17 @@ file(GLOB ALICE_TRACER_SRC
         ${ALICE_TRACER_ROOT}/core/src/*.cpp
         ${ALICE_TRACER_ROOT}/interface/src/*.cpp)
 
-message(STATUS ${ALICE_TRACER_SRC})
+#file(GLOB STB_IMAGE_SRC ${ALICE_TRACER_ROOT}/third_parties/stb_image/*)
 
 add_library(${PROJECT_NAME}
-        ${ALICE_TRACER_SRC}
-        )
+        ${ALICE_TRACER_SRC})
+#        ${STB_IMAGE_SRC})
+
+
+target_link_libraries(
+        ${PROJECT_NAME}
+        ${OPENGL_LIBRARY}
+        ${ASSIMP_LIB}
+)
 
 add_subdirectory(examples)

@@ -14,8 +14,8 @@
 #include "third_parties/glm/gtx/rotate_vector.hpp"
 #include "third_parties/glm/gtc/type_ptr.hpp"
 #include <cmath>
+
 namespace ALICE_UTILS {
-    #define MIN_THRESHOLD 1e-4
     // vector
     typedef glm::vec3 AVec3;
     typedef glm::vec2 AVec2;
@@ -33,6 +33,45 @@ namespace ALICE_UTILS {
     typedef glm::mat2x2 AMat2;
 
     // functions
+    template<typename T>
+    inline T AGrammaSpace(const T & val){
+        return glm::pow(val, T(1.f/2.2f));
+    }
+
+    template<typename T>
+    inline T ALinearSpace(const T & val){
+        return glm::pow(val, T(2.2f));
+    }
+
+    template <typename T>
+    inline bool AGreaterThanEqual(const T & v1, const T & v2){
+        auto res = glm::greaterThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(res[i])
+                return true;
+        }
+        return false;
+    }
+
+    template <typename T>
+    inline bool ALessThanEqual(const T & v1, const T & v2){
+        auto res = glm::lessThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(res[i])
+                return true;
+        }
+        return false;
+    }
+
+    template <typename T>
+    inline bool AGreaterThan(const T & v1, const T & v2){
+        auto res = glm::greaterThanEqual(v1, v2);
+        for(int i = 0; i < res.length(); ++i){
+            if(!res[i])
+                return false;
+        }
+        return true;
+    }
 
     template <typename T>
     inline decltype(auto) AIsNan(const T & vec){

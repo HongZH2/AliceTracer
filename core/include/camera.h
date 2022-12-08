@@ -24,13 +24,13 @@ namespace ALICE_TRACER{
         ~Camera() = default;
 
         // transfer the camera coordinate to the world cooridnate
-        void cameraToWorld(AVec3 & dir) const;
+        void cameraToWorld(AVec3 & dir);
 
         /*
         / Given a pixel and the resolution of the image, compute the camera ray
         / offset for sampling multiple direction within one pixel
         */
-        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const;
+        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset);
 
     public:
         float near_;
@@ -40,7 +40,9 @@ namespace ALICE_TRACER{
         float start_fm_;  // start frame time
         float interval_;  // the interval of the open shutter
         AVec3 pos_;
+        AVec3 look_at_;
 
+    protected:
         // the pose of the camera
         AVec3 forward_ = AVec3(0.f, 0.f, 1.f);
         AVec3 head_up_ = AVec3(0.f, 1.f, 0.f);
@@ -56,7 +58,7 @@ namespace ALICE_TRACER{
     public:
         ThinLenCamera() = default;
         ~ThinLenCamera() = default;
-        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) const override;
+        virtual Ray getSingleRay(AVec2i pixel, AVec2i resolution, AVec2 offset) override;
     public:
         float aperture_ = 0.f; // the
     };

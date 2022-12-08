@@ -3,6 +3,7 @@
 //
 
 #include "core/include/hittable.h"
+#include "core/include/random_variable.h"
 
 namespace ALICE_TRACER{
     // ------------------------------------------------------------
@@ -67,14 +68,17 @@ namespace ALICE_TRACER{
     // ------------------------------------------------------------
     Hittable::Hittable(){
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf): mtl_(mtl), bxdf_(bxdf) {
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::Hittable(Material *mtl, BxDFBase *bxdf, Movement * movement): mtl_(mtl), bxdf_(bxdf), movement_(movement) {
         bound_ = new AABB();
+        id_ = UniID();
     }
 
     Hittable::~Hittable() {
@@ -86,7 +90,7 @@ namespace ALICE_TRACER{
     }
 
     // --------------------
-    // -- Rectangle
+    // -- Sphere
     // --------------------
     Sphere::Sphere(AVec3 center, float radius, Material *mtl, BxDFBase *bxdf)
             : Hittable(mtl, bxdf), center_(center), radius_(radius){
@@ -125,13 +129,14 @@ namespace ALICE_TRACER{
         float c = dot(oc, oc) - radius_ * radius_;
         float discriminant = b*b - 4.f * a * c;
         if (discriminant > MIN_THRESHOLD) {
-            float sqrt_d = sqrt(discriminant)/(2.f * a);
+            float sqrt_d = std::sqrt(discriminant)/(2.f * a);
             float b_part = - b / (2.f * a);
             float t1 = b_part - sqrt_d;
             float t2 = b_part + sqrt_d;  // TODO
 
             if(t1 < ray.t_max_ && t1 > ray.t_min_) {
                 ray.t_max_ = t1;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -139,6 +144,19 @@ namespace ALICE_TRACER{
                 hit_res.setNormal(ANormalize(hit_res.point_ - c_center), ray.dir_);
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;
+            }
+            else{
+                if(t2 < ray.t_max_ && t2 > ray.t_min_) {
+                    ray.t_max_ = t2;
+                    hit_res.uni_id_ = id_;
+                    hit_res.is_hit_ = true;
+                    hit_res.mtl_ = mtl_;
+                    hit_res.bxdf_ = bxdf_;
+                    hit_res.point_ = ray.start_ + ray.dir_ * t2;
+                    hit_res.setNormal(ANormalize(hit_res.point_ - c_center), ray.dir_);
+                    hit_res.frame_time_ = ray.fm_t_;
+                    return true;
+                }
             }
         }
         return false;
@@ -167,6 +185,13 @@ namespace ALICE_TRACER{
         return bound_;
     }
 
+    AVec2 RectangleXY::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.x - lb.x) / (rt.x - lb.x);
+        uv.y = (point.y - lb.y) / (rt.y - lb.y);
+        return uv;
+    }
+
     AVec3 RectangleXY::center(float frame_time){
         if(movement_){
             return movement_->movementFunc(center_, frame_time);
@@ -188,6 +213,7 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.y > lb[1] && point.y < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
@@ -223,6 +249,13 @@ namespace ALICE_TRACER{
         return bound_;
     }
 
+    AVec2 RectangleXZ::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.x - lb.x) / abs(rt.x - lb.x);
+        uv.y = (point.z - lb.y) / abs(rt.y - lb.y);
+        return uv;
+    }
+
     AVec3 RectangleXZ::center(float frame_time){
         if(movement_){
             return movement_->movementFunc(center_, frame_time);
@@ -244,10 +277,12 @@ namespace ALICE_TRACER{
         if(point.x > lb[0] && point.x < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;
                 hit_res.point_ = ray.start_ + ray.dir_ * time;
+                hit_res.tex_coord_ = computeUV(hit_res.point_, lb, rt);
                 hit_res.setNormal(normal, ray.dir_);
                 hit_res.frame_time_ = ray.fm_t_;
                 return true;
@@ -278,6 +313,13 @@ namespace ALICE_TRACER{
         return bound_;
     }
 
+    AVec2 RectangleYZ::computeUV(ALICE_UTILS::AVec3 point, ALICE_UTILS::AVec2 lb, ALICE_UTILS::AVec2 rt) {
+        AVec2 uv;
+        uv.x = (point.y - lb.x) / (rt.x - lb.x);
+        uv.y = (point.z - lb.y) / (rt.y - lb.y);
+        return uv;
+    }
+
     AVec3 RectangleYZ::center(float frame_time){
         if(movement_){
             return movement_->movementFunc(center_, frame_time);
@@ -299,6 +341,7 @@ namespace ALICE_TRACER{
         if(point.y > lb[0] && point.y < rt[0] && point.z > lb[1] && point.z < rt[1]){
             if(time < ray.t_max_ && time > ray.t_min_) {
                 ray.t_max_ = time;
+                hit_res.uni_id_ = id_;
                 hit_res.is_hit_ = true;
                 hit_res.mtl_ = mtl_;
                 hit_res.bxdf_ = bxdf_;

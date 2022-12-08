@@ -13,14 +13,17 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstdint>
+#include <variant>
 #include "alice_log.h"
 
 namespace ALICE_UTILS {
 
-#define MAX_NUM_THREADS 10
+#define MAX_NUM_THREADS 12
 #define AABB_PADDING 1e-3
 #define MIN_RAY_TIME 1e-4
 #define MAX_RAY_TIME FLT_MAX
+#define MIN_THRESHOLD 1e-4
+#define MAX_THRESHOLD 1e4
 }
 
 

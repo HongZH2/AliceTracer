@@ -43,11 +43,14 @@ namespace ALICE_TRACER{
         virtual ~Hittable();
         virtual bool CheckHittable(Ray & ray, HitRes & hit_res) = 0;  // check if it is hit or not
         virtual AABB * boundLimit(float frame_time);
-
-        inline void setID(uint32_t id) {id_ = id;}
-        inline int32_t ID() const{return id_;}
+    public:
+        inline uint32_t id(){return id_;}
+        inline void setMaterial(Material* mtl){mtl_ = mtl;}
+        inline void setBxdf(BxDFBase * bxdf){bxdf_ = bxdf;}
+        inline Material * mtl(){return mtl_;}
+        inline BxDFBase * bxdf(){return bxdf_;}
     protected:
-        int32_t id_ = -1;
+        uint32_t id_; // unique id
         Material * mtl_ = nullptr;
         BxDFBase * bxdf_ = nullptr;
         AABB * bound_ = nullptr;
@@ -84,7 +87,11 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
@@ -102,7 +109,11 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area
@@ -120,7 +131,11 @@ namespace ALICE_TRACER{
 
         bool CheckHittable(Ray & ray, HitRes & hit_res) override;
         AABB * boundLimit(float frame_time) override;
+
+        inline AVec3 center(){return center_;}
+        inline AVec2 area(){return area_;}
     private:
+        static AVec2 computeUV(AVec3 point, AVec2 lb, AVec2 rt);
         AVec3 center(float frame_time);
         AVec3 center_ = AVec3(-0.5f, -0.5f, 0.f); // left bottom
         AVec2 area_ = AVec2(1.f); // area

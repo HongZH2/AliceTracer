@@ -11,6 +11,7 @@
 #define GL_SILENCE_DEPRECATION
 #endif
 
+
 namespace ALICE_TRACER{
     class TextureBuffer{
     public:
