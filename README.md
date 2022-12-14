@@ -1,4 +1,8 @@
 # AliceTracer
+
+----2022/12/14：I am working on CUDA now, please kindly check https://github.com/HongZH2/CudaAliceTracer
+
+
 ### A Ray Tracer Demo 
 This is a CPU-based path tracing project, that I built for experiments.
 ### Features
